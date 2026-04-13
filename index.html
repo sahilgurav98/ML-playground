@@ -1,0 +1,2992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="description" content="ML Playground - Interactive Machine Learning Visualizer PWA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ML Playground">
+<link rel="manifest" id="manifest-link">
+<title>ML Playground — Interactive ML/DL Visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #07090f;
+  --bg2: #0d1120;
+  --bg3: #131929;
+  --bg4: #1a2235;
+  --panel: #0f1520;
+  --border: #1e2d4a;
+  --border2: #2a3d5e;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --accent4: #f59e0b;
+  --accent5: #ef4444;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --glow: rgba(0,212,255,0.15);
+  --glow2: rgba(124,58,237,0.15);
+  --radius: 10px;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Syne', sans-serif;
+}
+.light-mode {
+  --bg: #f0f4ff;
+  --bg2: #e8eef9;
+  --bg3: #dde5f5;
+  --bg4: #cdd8ee;
+  --panel: #f8faff;
+  --border: #c5d3e8;
+  --border2: #a8bcd8;
+  --text: #1e293b;
+  --text2: #475569;
+  --text3: #94a3b8;
+  --glow: rgba(0,120,200,0.08);
+  --glow2: rgba(100,40,200,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font-mono);background:var(--bg);color:var(--text);display:flex;transition:background 0.3s,color 0.3s;}
+
+/* Sidebar */
+#sidebar{width:240px;min-width:240px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto;transition:transform 0.3s,background 0.3s;z-index:100;}
+#sidebar-logo{padding:20px 16px 12px;border-bottom:1px solid var(--border);}
+#sidebar-logo h1{font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--accent);letter-spacing:-0.5px;}
+#sidebar-logo p{font-size:10px;color:var(--text3);margin-top:2px;}
+.nav-section{padding:12px 8px 4px;}
+.nav-section-title{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:2px;text-transform:uppercase;padding:0 8px 6px;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:11px;color:var(--text2);transition:all 0.15s;margin-bottom:2px;}
+.nav-item:hover{background:var(--bg4);color:var(--text);}
+.nav-item.active{background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(124,58,237,0.1));color:var(--accent);border:1px solid rgba(0,212,255,0.2);}
+.nav-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+#sidebar-bottom{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border);}
+.sidebar-btn{width:100%;padding:8px 12px;background:var(--bg4);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:var(--font-mono);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:6px;transition:all 0.15s;}
+.sidebar-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* Main Content */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+#topbar{height:48px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;}
+#topbar-title{font-family:var(--font-display);font-size:15px;font-weight:700;flex:1;}
+.topbar-badge{background:var(--bg4);border:1px solid var(--border2);padding:3px 8px;border-radius:20px;font-size:10px;color:var(--text2);}
+.icon-btn{width:32px;height:32px;border:1px solid var(--border);background:var(--bg4);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;transition:all 0.15s;}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+#content{flex:1;overflow-y:auto;padding:20px;}
+
+/* Cards & Panels */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;transition:background 0.3s;}
+.card-title{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-title .badge{font-size:9px;padding:2px 7px;border-radius:10px;font-family:var(--font-mono);font-weight:400;}
+.badge-accent{background:rgba(0,212,255,0.15);color:var(--accent);border:1px solid rgba(0,212,255,0.3);}
+.badge-purple{background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.3);}
+.badge-green{background:rgba(16,185,129,0.15);color:var(--accent3);border:1px solid rgba(16,185,129,0.3);}
+.badge-amber{background:rgba(245,158,11,0.15);color:var(--accent4);border:1px solid rgba(245,158,11,0.3);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* Forms */
+label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px;}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;transition:border-color 0.15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+input[type=range]{width:100%;accent-color:var(--accent);}
+.form-group{margin-bottom:12px;}
+.btn{padding:8px 16px;border-radius:7px;font-family:var(--font-mono);font-size:11px;cursor:pointer;border:none;transition:all 0.15s;font-weight:500;}
+.btn-primary{background:var(--accent);color:#000;}
+.btn-primary:hover{opacity:0.85;box-shadow:0 0 16px rgba(0,212,255,0.4);}
+.btn-secondary{background:var(--bg4);color:var(--text2);border:1px solid var(--border);}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+.btn-purple{background:var(--accent2);color:#fff;}
+.btn-purple:hover{opacity:0.85;box-shadow:0 0 16px rgba(124,58,237,0.4);}
+.btn-green{background:var(--accent3);color:#000;}
+.btn-sm{padding:5px 10px;font-size:10px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+/* Table */
+.data-table-wrapper{overflow:auto;max-height:280px;border:1px solid var(--border);border-radius:8px;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{background:var(--bg4);color:var(--text2);padding:8px 10px;text-align:left;font-weight:600;position:sticky;top:0;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text2);white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg4);}
+
+/* Canvas areas */
+.canvas-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;position:relative;}
+canvas{display:block;}
+
+/* Metrics */
+.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:12px;}
+.metric{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;}
+.metric-val{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--accent);}
+.metric-label{font-size:10px;color:var(--text3);margin-top:3px;}
+
+/* Steps */
+.step-list{counter-reset:step;}
+.step{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start;}
+.step-num{width:22px;height:22px;background:var(--bg4);border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--accent);flex-shrink:0;font-weight:700;}
+.step-text{font-size:11px;color:var(--text2);line-height:1.6;padding-top:2px;}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:16px;background:var(--bg3);padding:3px;border-radius:9px;width:fit-content;}
+.tab{padding:6px 14px;border-radius:7px;font-size:11px;cursor:pointer;color:var(--text2);transition:all 0.15s;}
+.tab.active{background:var(--panel);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* Algo explanation */
+.algo-explain{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;font-size:11px;color:var(--text2);line-height:1.8;}
+.algo-explain strong{color:var(--accent);font-weight:600;}
+
+/* Neural net viz */
+.nn-layer{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.nn-neuron{width:36px;height:36px;border-radius:50%;border:2px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text2);transition:all 0.3s;cursor:pointer;}
+.nn-neuron.active{border-color:var(--accent);background:rgba(0,212,255,0.15);box-shadow:0 0 12px rgba(0,212,255,0.4);}
+.nn-neuron.fired{border-color:var(--accent4);background:rgba(245,158,11,0.2);box-shadow:0 0 12px rgba(245,158,11,0.5);}
+.nn-container{display:flex;gap:32px;align-items:center;justify-content:center;padding:20px;overflow-x:auto;}
+#nn-svg{position:absolute;top:0;left:0;pointer-events:none;}
+
+/* Cluster viz */
+.viz-container{position:relative;width:100%;padding-bottom:60%;background:var(--bg2);border-radius:8px;overflow:hidden;}
+.viz-container canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;}
+
+/* Attention heatmap */
+.heatmap-grid{display:grid;gap:2px;}
+.heatmap-cell{border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;transition:all 0.3s;}
+
+/* RAG pipeline */
+.rag-step{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;min-width:100px;text-align:center;transition:all 0.3s;}
+.rag-step.active{border-color:var(--accent);background:rgba(0,212,255,0.08);box-shadow:0 0 12px rgba(0,212,255,0.2);}
+.rag-step.done{border-color:var(--accent3);background:rgba(16,185,129,0.08);}
+.rag-icon{font-size:20px;}
+.rag-label{font-size:10px;color:var(--text2);}
+.rag-pipeline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.rag-arrow{color:var(--text3);font-size:16px;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text3);}
+
+/* Responsive */
+@media(max-width:768px){
+  #sidebar{position:fixed;left:0;top:0;height:100vh;transform:translateX(-100%);z-index:1000;}
+  #sidebar.open{transform:translateX(0);}
+  body{flex-direction:column;}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+}
+
+/* Animations */
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 8px rgba(0,212,255,0.3);}50%{box-shadow:0 0 20px rgba(0,212,255,0.7);}}
+.animate-in{animation:slideIn 0.3s ease forwards;}
+.processing{animation:pulse 1s infinite;}
+
+/* Install button */
+#install-btn{display:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 14px;border-radius:7px;font-family:var(--font-mono);font-size:11px;cursor:pointer;font-weight:600;}
+
+/* Progress bar */
+.progress{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-top:6px;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width 0.4s ease;}
+
+/* Feature chip */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--bg4);border:1px solid var(--border);border-radius:20px;font-size:10px;color:var(--text2);cursor:pointer;margin:2px;transition:all 0.15s;}
+.chip:hover,.chip.selected{background:rgba(0,212,255,0.15);border-color:var(--accent);color:var(--accent);}
+
+/* Tooltip */
+.tooltip{position:relative;}
+.tooltip:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100%+6px);left:50%;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--border);padding:5px 10px;border-radius:6px;font-size:10px;white-space:nowrap;color:var(--text2);z-index:9999;}
+
+/* GNN Graph */
+.gnn-node{position:absolute;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid;transition:all 0.4s;cursor:pointer;}
+
+/* Hidden page sections */
+.page{display:none;}
+.page.active{display:block;}
+
+/* Upload area */
+.upload-area{border:2px dashed var(--border2);border-radius:10px;padding:30px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.upload-area:hover{border-color:var(--accent);background:var(--glow);}
+.upload-area-icon{font-size:32px;margin-bottom:8px;}
+.upload-area-text{font-size:12px;color:var(--text2);}
+.upload-area-sub{font-size:10px;color:var(--text3);margin-top:4px;}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav id="sidebar">
+  <div id="sidebar-logo">
+    <h1>⚡ ML Playground</h1>
+    <p>Interactive ML/DL Visualizer</p>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Data</div>
+    <div class="nav-item active" onclick="showPage('dataset')">
+      <span class="nav-icon">🗃️</span> Dataset Manager
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Supervised Learning</div>
+    <div class="nav-item" onclick="showPage('linear-reg')"><span class="nav-icon">📈</span> Linear Regression</div>
+    <div class="nav-item" onclick="showPage('logistic-reg')"><span class="nav-icon">🔀</span> Logistic Regression</div>
+    <div class="nav-item" onclick="showPage('naive-bayes')"><span class="nav-icon">📊</span> Naive Bayes</div>
+    <div class="nav-item" onclick="showPage('svm')"><span class="nav-icon">✂️</span> SVM</div>
+    <div class="nav-item" onclick="showPage('decision-tree')"><span class="nav-icon">🌳</span> Decision Tree</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Unsupervised Learning</div>
+    <div class="nav-item" onclick="showPage('kmeans')"><span class="nav-icon">🔵</span> K-Means</div>
+    <div class="nav-item" onclick="showPage('hierarchical')"><span class="nav-icon">🌿</span> Hierarchical</div>
+    <div class="nav-item" onclick="showPage('dbscan')"><span class="nav-icon">🌀</span> DBSCAN</div>
+    <div class="nav-item" onclick="showPage('pca')"><span class="nav-icon">📐</span> PCA</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Neural Networks</div>
+    <div class="nav-item" onclick="showPage('fnn')"><span class="nav-icon">🧠</span> Feedforward NN</div>
+    <div class="nav-item" onclick="showPage('cnn')"><span class="nav-icon">🖼️</span> CNN</div>
+    <div class="nav-item" onclick="showPage('rnn')"><span class="nav-icon">🔄</span> RNN</div>
+    <div class="nav-item" onclick="showPage('transformer')"><span class="nav-icon">🤖</span> Transformer</div>
+    <div class="nav-item" onclick="showPage('gnn')"><span class="nav-icon">🕸️</span> Graph NN</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Advanced</div>
+    <div class="nav-item" onclick="showPage('rag')"><span class="nav-icon">🔍</span> RAG Pipeline</div>
+    <div class="nav-item" onclick="showPage('compare')"><span class="nav-icon">⚖️</span> Algorithm Compare</div>
+  </div>
+
+  <div id="sidebar-bottom">
+    <button class="sidebar-btn" onclick="toggleTheme()">🌓 <span id="theme-label">Light Mode</span></button>
+    <button class="sidebar-btn" id="install-btn" onclick="installPWA()">📲 Install App</button>
+    <button class="sidebar-btn" onclick="exportResults()">💾 Export Results</button>
+  </div>
+</nav>
+
+<!-- Main -->
+<div id="main">
+  <div id="topbar">
+    <button class="icon-btn" onclick="toggleSidebar()" id="menu-btn">☰</button>
+    <div id="topbar-title">Dataset Manager</div>
+    <span class="topbar-badge" id="dataset-badge">No Dataset</span>
+    <span class="topbar-badge" id="offline-badge" style="color:var(--accent3)">● PWA Ready</span>
+  </div>
+
+  <div id="content">
+
+    <!-- ═══════════════════════════════════════════════════════ DATASET PAGE -->
+    <div class="page active" id="page-dataset">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Upload Dataset <span class="badge badge-accent">CSV</span></div>
+          <div class="upload-area" onclick="document.getElementById('csv-input').click()" id="drop-zone">
+            <div class="upload-area-icon">📂</div>
+            <div class="upload-area-text">Click to upload CSV or drag & drop</div>
+            <div class="upload-area-sub">Supports .csv files up to 10MB</div>
+          </div>
+          <input type="file" id="csv-input" accept=".csv" style="display:none" onchange="loadCSV(this)">
+          <div style="margin-top:12px;">
+            <div class="card-title" style="font-size:11px;margin-bottom:8px;">Or load sample dataset:</div>
+            <div class="btn-row">
+              <button class="btn btn-secondary btn-sm" onclick="loadSample('iris')">🌸 Iris</button>
+              <button class="btn btn-secondary btn-sm" onclick="loadSample('titanic')">🚢 Titanic</button>
+              <button class="btn btn-secondary btn-sm" onclick="loadSample('housing')">🏠 Housing</button>
+              <button class="btn btn-secondary btn-sm" onclick="loadSample('mnist')">🔢 MNIST-like</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Dataset Summary</div>
+          <div id="dataset-summary">
+            <div style="color:var(--text3);font-size:11px;text-align:center;padding:20px;">No dataset loaded</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="dataset-config-card" style="display:none;">
+        <div class="card-title">Data Configuration</div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Target Column</label>
+            <select id="target-col"></select>
+          </div>
+          <div class="form-group">
+            <label>Missing Values</label>
+            <select id="missing-strategy">
+              <option value="drop">Drop rows</option>
+              <option value="mean">Fill with mean</option>
+              <option value="median">Fill with median</option>
+              <option value="zero">Fill with 0</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Normalization</label>
+            <select id="norm-strategy">
+              <option value="none">None</option>
+              <option value="minmax">Min-Max (0–1)</option>
+              <option value="zscore">Z-Score</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Feature Columns (click to select/deselect):</label>
+          <div id="feature-chips"></div>
+        </div>
+        <div class="form-group">
+          <label>Train / Test Split: <span id="split-label">80% / 20%</span></label>
+          <input type="range" id="split-slider" min="50" max="95" value="80" oninput="updateSplitLabel(this.value)">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="applyDataConfig()">⚡ Apply Configuration</button>
+          <button class="btn btn-secondary" onclick="resetDataset()">🔄 Reset</button>
+          <button class="btn btn-secondary btn-sm" onclick="exportDataset()">💾 Export</button>
+        </div>
+      </div>
+
+      <div class="card" id="data-preview-card" style="display:none;">
+        <div class="card-title">Data Preview <span class="badge badge-accent" id="preview-badge"></span></div>
+        <div class="data-table-wrapper">
+          <table id="data-table"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ LINEAR REGRESSION -->
+    <div class="page" id="page-linear-reg">
+      <div class="algo-explain">
+        <strong>Linear Regression</strong> finds the best-fit line through data by minimizing the sum of squared residuals (OLS). The model learns weights <strong>w</strong> and bias <strong>b</strong> such that ŷ = Xw + b. Gradient descent iteratively updates weights: w ← w - α·∇L where α is the learning rate and ∇L is the loss gradient.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Hyperparameters</div>
+          <div class="form-group"><label>Learning Rate (α)</label>
+            <input type="range" min="1" max="100" value="10" id="lr-lr" oninput="document.getElementById('lr-lr-val').textContent='0.0'+this.value"><br>
+            <small style="color:var(--text3)">α = <span id="lr-lr-val">0.010</span></small>
+          </div>
+          <div class="form-group"><label>Epochs</label>
+            <input type="number" id="lr-epochs" value="200" min="10" max="2000"></div>
+          <div class="form-group"><label>Regularization (L2)</label>
+            <input type="range" min="0" max="100" value="0" id="lr-reg" oninput="document.getElementById('lr-reg-val').textContent=(this.value/1000).toFixed(3)"><br>
+            <small style="color:var(--text3)">λ = <span id="lr-reg-val">0.000</span></small>
+          </div>
+          <button class="btn btn-primary" onclick="runLinearRegression()" style="width:100%">▶ Train Model</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Metrics</div>
+          <div class="metric-row" id="lr-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">R² Score</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">MSE</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">MAE</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">RMSE</div></div>
+          </div>
+          <div class="form-group" style="margin-top:10px;">
+            <label>Predict (enter feature values, comma-separated):</label>
+            <input type="text" id="lr-pred-input" placeholder="e.g. 5.1,3.5,1.4">
+            <button class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="predictLinear()">Predict →</button>
+            <div id="lr-pred-result" style="margin-top:6px;font-size:12px;color:var(--accent)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Loss Curve</div>
+          <canvas id="lr-loss-chart" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-title">Actual vs Predicted</div>
+          <canvas id="lr-scatter-chart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ LOGISTIC REGRESSION -->
+    <div class="page" id="page-logistic-reg">
+      <div class="algo-explain">
+        <strong>Logistic Regression</strong> models binary classification using the sigmoid function σ(z) = 1/(1+e⁻ᶻ) where z = Xw + b. It uses Binary Cross-Entropy loss: L = -[y·log(ŷ) + (1-y)·log(1-ŷ)]. Optimized via gradient descent to find the decision boundary.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Hyperparameters</div>
+          <div class="form-group"><label>Learning Rate</label>
+            <input type="range" min="1" max="50" value="5" id="log-lr" oninput="document.getElementById('log-lr-val').textContent='0.00'+this.value.padStart(2,'0')"><br>
+            <small style="color:var(--text3)">α = <span id="log-lr-val">0.005</span></small>
+          </div>
+          <div class="form-group"><label>Epochs</label><input type="number" id="log-epochs" value="300" min="10" max="2000"></div>
+          <div class="form-group"><label>Threshold</label>
+            <input type="range" min="10" max="90" value="50" id="log-thresh" oninput="document.getElementById('log-thresh-val').textContent=(this.value/100).toFixed(2)"><br>
+            <small style="color:var(--text3)">τ = <span id="log-thresh-val">0.50</span></small>
+          </div>
+          <button class="btn btn-primary" onclick="runLogisticRegression()" style="width:100%">▶ Train Model</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Metrics</div>
+          <div class="metric-row" id="log-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Accuracy</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Precision</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Recall</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">F1</div></div>
+          </div>
+          <div id="log-conf-matrix" style="margin-top:10px;"></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title">Loss Curve</div><canvas id="log-loss-chart" height="200"></canvas></div>
+        <div class="card"><div class="card-title">Decision Boundary</div><canvas id="log-boundary-chart" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ NAIVE BAYES -->
+    <div class="page" id="page-naive-bayes">
+      <div class="algo-explain">
+        <strong>Naive Bayes</strong> applies Bayes' theorem P(C|X) ∝ P(C)·∏P(xᵢ|C) with the "naive" assumption that features are conditionally independent. Gaussian NB assumes each class's features follow a normal distribution, estimating μ and σ² per feature per class.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Configuration</div>
+          <div class="form-group"><label>Variant</label>
+            <select id="nb-variant">
+              <option>Gaussian NB</option>
+              <option>Multinomial NB</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Laplace Smoothing</label>
+            <input type="range" min="0" max="20" value="1" id="nb-smooth" oninput="document.getElementById('nb-smooth-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">α = <span id="nb-smooth-val">1</span></small>
+          </div>
+          <button class="btn btn-primary" onclick="runNaiveBayes()" style="width:100%">▶ Train Model</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Metrics</div>
+          <div class="metric-row" id="nb-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Accuracy</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Precision</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Recall</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">F1</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title">Class Probability Distribution</div><canvas id="nb-dist-chart" height="220"></canvas></div>
+        <div class="card"><div class="card-title">Feature Importance (Log-Likelihood)</div><canvas id="nb-feat-chart" height="220"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ SVM -->
+    <div class="page" id="page-svm">
+      <div class="algo-explain">
+        <strong>Support Vector Machine</strong> finds the maximum-margin hyperplane that separates classes. It maximizes the margin 2/‖w‖ while minimizing hinge loss: L = max(0, 1 - yᵢ(w·xᵢ - b)). Support vectors are the critical points closest to the decision boundary.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Hyperparameters</div>
+          <div class="form-group"><label>C (Regularization)</label>
+            <input type="range" min="1" max="100" value="10" id="svm-c" oninput="document.getElementById('svm-c-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">C = <span id="svm-c-val">10</span></small>
+          </div>
+          <div class="form-group"><label>Kernel</label>
+            <select id="svm-kernel"><option>Linear</option><option>RBF</option><option>Polynomial</option></select>
+          </div>
+          <div class="form-group"><label>Epochs (SGD)</label>
+            <input type="number" id="svm-epochs" value="200" min="50" max="1000">
+          </div>
+          <button class="btn btn-primary" onclick="runSVM()" style="width:100%">▶ Train Model</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Metrics</div>
+          <div class="metric-row" id="svm-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Accuracy</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Support Vectors</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Margin</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">F1</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title">Hinge Loss</div><canvas id="svm-loss-chart" height="200"></canvas></div>
+        <div class="card"><div class="card-title">Decision Boundary & Margin</div><canvas id="svm-boundary-chart" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ DECISION TREE -->
+    <div class="page" id="page-decision-tree">
+      <div class="algo-explain">
+        <strong>Decision Tree</strong> recursively splits data by selecting the feature and threshold that maximizes <strong>Information Gain</strong> (or minimizes Gini impurity). Each leaf node holds a class prediction. Max depth limits overfitting.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Hyperparameters</div>
+          <div class="form-group"><label>Max Depth</label>
+            <input type="range" min="1" max="10" value="4" id="dt-depth" oninput="document.getElementById('dt-depth-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">Depth = <span id="dt-depth-val">4</span></small>
+          </div>
+          <div class="form-group"><label>Split Criterion</label>
+            <select id="dt-criterion"><option>Gini</option><option>Entropy</option></select>
+          </div>
+          <div class="form-group"><label>Min Samples Split</label>
+            <input type="number" id="dt-min-split" value="2" min="2" max="20">
+          </div>
+          <button class="btn btn-primary" onclick="runDecisionTree()" style="width:100%">▶ Train Model</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Metrics</div>
+          <div class="metric-row" id="dt-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Accuracy</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Tree Depth</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Leaves</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">F1</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title">Feature Importance</div><canvas id="dt-feat-chart" height="200"></canvas></div>
+        <div class="card"><div class="card-title">Tree Visualization</div><canvas id="dt-tree-chart" width="500" height="200"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ K-MEANS -->
+    <div class="page" id="page-kmeans">
+      <div class="algo-explain">
+        <strong>K-Means Clustering</strong> partitions n points into K clusters by alternating between: (1) <strong>Assignment</strong> — assign each point to the nearest centroid, and (2) <strong>Update</strong> — recompute centroids as the mean of assigned points. Converges when centroids stabilize.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Hyperparameters</div>
+          <div class="form-group"><label>K (clusters)</label>
+            <input type="range" min="2" max="10" value="3" id="km-k" oninput="document.getElementById('km-k-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">K = <span id="km-k-val">3</span></small>
+          </div>
+          <div class="form-group"><label>Max Iterations</label><input type="number" id="km-iters" value="50" min="5" max="200"></div>
+          <div class="form-group"><label>Init Method</label>
+            <select id="km-init"><option>K-Means++</option><option>Random</option></select>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="runKMeans(false)">▶ Run</button>
+            <button class="btn btn-purple" onclick="runKMeans(true)">⏩ Animate</button>
+            <button class="btn btn-secondary btn-sm" onclick="generateClusterData()">🎲 Generate Data</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Metrics</div>
+          <div class="metric-row" id="km-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Inertia</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Silhouette</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Iterations</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Converged</div></div>
+          </div>
+          <div id="km-iter-log" style="font-size:10px;color:var(--text3);max-height:80px;overflow-y:auto;margin-top:8px;"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Cluster Visualization</div>
+        <canvas id="km-chart" height="350"></canvas>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ HIERARCHICAL -->
+    <div class="page" id="page-hierarchical">
+      <div class="algo-explain">
+        <strong>Hierarchical Clustering (Agglomerative)</strong> builds a dendrogram by iteratively merging the two closest clusters. Linkage criteria determines "closest": <strong>Single</strong> (min distance), <strong>Complete</strong> (max distance), <strong>Average</strong> (mean distance), or <strong>Ward</strong> (minimum variance).
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Configuration</div>
+          <div class="form-group"><label>Linkage</label>
+            <select id="hc-linkage"><option>Complete</option><option>Single</option><option>Average</option><option>Ward</option></select>
+          </div>
+          <div class="form-group"><label>Distance Metric</label>
+            <select id="hc-metric"><option>Euclidean</option><option>Manhattan</option></select>
+          </div>
+          <div class="form-group"><label>Cut at K clusters</label>
+            <input type="range" min="2" max="8" value="3" id="hc-k" oninput="document.getElementById('hc-k-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">K = <span id="hc-k-val">3</span></small>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="runHierarchical()">▶ Cluster</button>
+            <button class="btn btn-secondary btn-sm" onclick="generateClusterData2()">🎲 Generate Data</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Metrics</div>
+          <div class="metric-row" id="hc-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Clusters</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Silhouette</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Points</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Merges</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title">Scatter Plot</div><canvas id="hc-scatter-chart" height="250"></canvas></div>
+        <div class="card"><div class="card-title">Dendrogram (simplified)</div><canvas id="hc-dendro-chart" height="250"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ DBSCAN -->
+    <div class="page" id="page-dbscan">
+      <div class="algo-explain">
+        <strong>DBSCAN</strong> (Density-Based Spatial Clustering) groups together points that are closely packed (high density) and marks outliers in low-density regions. Two parameters control it: <strong>ε</strong> (neighborhood radius) and <strong>minPts</strong> (minimum neighbors to form a core point). No need to specify K!
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Parameters</div>
+          <div class="form-group"><label>Epsilon (ε)</label>
+            <input type="range" min="5" max="80" value="30" id="db-eps" oninput="document.getElementById('db-eps-val').textContent=(this.value/100).toFixed(2)"><br>
+            <small style="color:var(--text3)">ε = <span id="db-eps-val">0.30</span></small>
+          </div>
+          <div class="form-group"><label>Min Points</label>
+            <input type="range" min="2" max="15" value="4" id="db-min" oninput="document.getElementById('db-min-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">minPts = <span id="db-min-val">4</span></small>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="runDBSCAN()">▶ Cluster</button>
+            <button class="btn btn-secondary btn-sm" onclick="generateNoiseData()">🎲 Noisy Data</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Metrics</div>
+          <div class="metric-row" id="db-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Clusters</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Noise Points</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Core Points</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Border Points</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">DBSCAN Visualization</div><canvas id="db-chart" height="350"></canvas></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ PCA -->
+    <div class="page" id="page-pca">
+      <div class="algo-explain">
+        <strong>PCA</strong> (Principal Component Analysis) reduces dimensionality by finding orthogonal axes (principal components) that capture maximum variance. It computes the covariance matrix, decomposes it into eigenvectors/eigenvalues, and projects data onto the top-k eigenvectors.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Configuration</div>
+          <div class="form-group"><label>Components to keep</label>
+            <input type="range" min="1" max="5" value="2" id="pca-k" oninput="document.getElementById('pca-k-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">k = <span id="pca-k-val">2</span></small>
+          </div>
+          <button class="btn btn-primary" onclick="runPCA()" style="width:100%">▶ Run PCA</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Variance Explained</div>
+          <div class="metric-row" id="pca-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">PC1 Var%</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">PC2 Var%</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Total Var%</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Features</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title">PCA Projection (2D)</div><canvas id="pca-scatter-chart" height="250"></canvas></div>
+        <div class="card"><div class="card-title">Explained Variance Ratio</div><canvas id="pca-var-chart" height="250"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ FNN -->
+    <div class="page" id="page-fnn">
+      <div class="algo-explain">
+        <strong>Feedforward Neural Network</strong> processes inputs through layers of neurons. Each neuron computes z = Wx + b, applies activation σ(z). Backpropagation computes gradients via chain rule and updates weights. Watch the forward pass (blue) and backward pass (orange) animations below.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Architecture Builder</div>
+          <div class="form-group"><label>Hidden Layers (comma-separated neuron counts)</label>
+            <input type="text" id="fnn-layers" value="4,4,3" placeholder="e.g. 8,6,4"></div>
+          <div class="form-group"><label>Activation</label>
+            <select id="fnn-activation"><option>ReLU</option><option>Sigmoid</option><option>Tanh</option></select></div>
+          <div class="form-group"><label>Learning Rate</label>
+            <input type="range" min="1" max="50" value="10" id="fnn-lr" oninput="document.getElementById('fnn-lr-val').textContent=(this.value/1000).toFixed(3)"><br>
+            <small style="color:var(--text3)">α = <span id="fnn-lr-val">0.010</span></small>
+          </div>
+          <div class="form-group"><label>Epochs</label><input type="number" id="fnn-epochs" value="100" min="10" max="500"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="buildFNN()">🏗️ Build & Train</button>
+            <button class="btn btn-purple" onclick="animateFNN()">▶ Animate Forward Pass</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Network Metrics</div>
+          <div class="metric-row" id="fnn-metrics">
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Train Loss</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Val Loss</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Accuracy</div></div>
+            <div class="metric"><div class="metric-val">—</div><div class="metric-label">Parameters</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Network Visualization</div>
+        <div id="fnn-viz" style="min-height:200px;background:var(--bg2);border-radius:8px;overflow:hidden;position:relative;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Loss Curve</div>
+        <canvas id="fnn-loss-chart" height="180"></canvas>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ CNN -->
+    <div class="page" id="page-cnn">
+      <div class="algo-explain">
+        <strong>Convolutional Neural Network</strong> applies learned filters (kernels) that slide across input, detecting local patterns. Each filter produces a <strong>feature map</strong>. Pooling layers downsample feature maps. Stacking convolutions builds hierarchical feature detectors (edges → textures → objects).
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">CNN Configuration</div>
+          <div class="form-group"><label>Kernel Size</label>
+            <select id="cnn-kernel"><option value="3">3×3</option><option value="5">5×5</option></select></div>
+          <div class="form-group"><label>Filter Type</label>
+            <select id="cnn-filter">
+              <option value="edge">Edge Detection</option>
+              <option value="blur">Gaussian Blur</option>
+              <option value="sharpen">Sharpen</option>
+              <option value="emboss">Emboss</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Stride</label>
+            <input type="range" min="1" max="3" value="1" id="cnn-stride" oninput="document.getElementById('cnn-stride-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">stride = <span id="cnn-stride-val">1</span></small>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="runCNN()">▶ Apply Convolution</button>
+            <button class="btn btn-purple" onclick="animateCNNConv()">⏩ Animate Kernel</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Architecture Overview</div>
+          <div class="step-list">
+            <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Input Layer:</strong> Raw pixel values (e.g. 28×28 grayscale)</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Conv Layer:</strong> Apply K filters, produce K feature maps</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-text"><strong>ReLU:</strong> max(0, x) — introduce non-linearity</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Pooling:</strong> Max-pool 2×2 — reduce spatial dimensions</div></div>
+            <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Flatten + FC:</strong> Dense layers for classification</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card"><div class="card-title">Input Image</div><canvas id="cnn-input-canvas" width="140" height="140" style="image-rendering:pixelated;display:block;margin:auto;"></canvas></div>
+        <div class="card"><div class="card-title">Feature Map</div><canvas id="cnn-feature-canvas" width="140" height="140" style="image-rendering:pixelated;display:block;margin:auto;"></canvas></div>
+        <div class="card"><div class="card-title">After Max-Pooling</div><canvas id="cnn-pool-canvas" width="140" height="140" style="image-rendering:pixelated;display:block;margin:auto;"></canvas></div>
+      </div>
+      <div class="card"><div class="card-title">Kernel Animation (sliding window)</div><canvas id="cnn-anim-canvas" width="340" height="180"></canvas></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ RNN -->
+    <div class="page" id="page-rnn">
+      <div class="algo-explain">
+        <strong>Recurrent Neural Network</strong> processes sequences by maintaining a <strong>hidden state</strong> hₜ = σ(Wₓxₜ + Wₕhₜ₋₁ + b). Each time step takes current input xₜ and previous hidden state hₜ₋₁, producing output yₜ. This enables memory of past inputs — critical for time-series, text, and speech.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Sequence Config</div>
+          <div class="form-group"><label>Input Sequence</label>
+            <input type="text" id="rnn-sequence" value="1,2,3,4,5,6,7,8" placeholder="comma-separated numbers"></div>
+          <div class="form-group"><label>Hidden Size</label>
+            <input type="range" min="2" max="16" value="4" id="rnn-hidden" oninput="document.getElementById('rnn-hidden-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">h = <span id="rnn-hidden-val">4</span></small>
+          </div>
+          <div class="form-group"><label>RNN Variant</label>
+            <select id="rnn-type"><option>Vanilla RNN</option><option>LSTM</option><option>GRU</option></select>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="runRNN()">▶ Process Sequence</button>
+            <button class="btn btn-purple" onclick="animateRNN()">⏩ Animate Steps</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Hidden State Gates (LSTM)</div>
+          <div class="step-list">
+            <div class="step"><div class="step-num" style="background:rgba(239,68,68,0.2);color:#ef4444;border-color:#ef4444">F</div><div class="step-text"><strong>Forget Gate:</strong> fₜ = σ(Wf·[hₜ₋₁,xₜ] + bf) — what to forget from cell state</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(16,185,129,0.2);color:var(--accent3);border-color:var(--accent3)">I</div><div class="step-text"><strong>Input Gate:</strong> iₜ = σ(Wi·[hₜ₋₁,xₜ] + bi) — what new info to add</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(0,212,255,0.2);color:var(--accent);border-color:var(--accent)">O</div><div class="step-text"><strong>Output Gate:</strong> oₜ = σ(Wo·[hₜ₋₁,xₜ] + bo) — what to output</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sequence Processing Visualization</div>
+        <canvas id="rnn-viz-canvas" width="800" height="220"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">Hidden State Over Time</div>
+        <canvas id="rnn-hidden-chart" height="160"></canvas>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ TRANSFORMER -->
+    <div class="page" id="page-transformer">
+      <div class="algo-explain">
+        <strong>Transformer</strong> uses <strong>self-attention</strong> to relate all positions in a sequence simultaneously. Attention(Q,K,V) = softmax(QKᵀ/√dₖ)V. Multi-head attention runs h parallel attention functions, enabling the model to jointly attend to information from different representation subspaces.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Configuration</div>
+          <div class="form-group"><label>Input Text</label>
+            <input type="text" id="transformer-input" value="The cat sat on the mat" placeholder="Enter a sentence"></div>
+          <div class="form-group"><label>Attention Heads</label>
+            <input type="range" min="1" max="8" value="4" id="transformer-heads" oninput="document.getElementById('transformer-heads-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">heads = <span id="transformer-heads-val">4</span></small>
+          </div>
+          <div class="form-group"><label>d_model</label>
+            <select id="transformer-dmodel"><option value="64">64</option><option value="128">128</option><option value="256">256</option></select>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="runTransformer()">▶ Compute Attention</button>
+            <button class="btn btn-purple" onclick="animateAttention()">⏩ Animate</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Tokenization</div>
+          <div id="transformer-tokens" style="min-height:60px;padding:10px;"></div>
+          <div style="margin-top:10px;font-size:10px;color:var(--text3);">Positional encoding is added to each token embedding to preserve sequence order information.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Self-Attention Heatmap <span class="badge badge-purple">Head 1</span></div>
+        <div id="attention-heatmap" style="overflow:auto;"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Architecture Flow</div>
+        <canvas id="transformer-arch-canvas" width="700" height="120"></canvas>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ GNN -->
+    <div class="page" id="page-gnn">
+      <div class="algo-explain">
+        <strong>Graph Neural Network</strong> learns node representations by aggregating neighbor information. Each layer: hᵥ⁽ˡ⁺¹⁾ = σ(W·AGGREGATE({hᵤ⁽ˡ⁾: u∈N(v)})) where N(v) is the neighborhood of v. Multiple layers capture multi-hop relationships.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Graph Config</div>
+          <div class="form-group"><label>Graph Type</label>
+            <select id="gnn-type" onchange="buildGNNGraph()">
+              <option>Social Network</option>
+              <option>Citation Graph</option>
+              <option>Molecular Graph</option>
+            </select>
+          </div>
+          <div class="form-group"><label>GNN Layers</label>
+            <input type="range" min="1" max="4" value="2" id="gnn-layers" oninput="document.getElementById('gnn-layers-val').textContent=this.value"><br>
+            <small style="color:var(--text3)">layers = <span id="gnn-layers-val">2</span></small>
+          </div>
+          <div class="form-group"><label>Aggregation</label>
+            <select id="gnn-aggr"><option>Mean</option><option>Sum</option><option>Max</option></select>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="runGNN()">▶ Run Message Passing</button>
+            <button class="btn btn-purple" onclick="animateGNN()">⏩ Animate</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Node Embeddings</div>
+          <div id="gnn-embeddings" style="font-size:10px;color:var(--text2);"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Graph Visualization</div>
+        <canvas id="gnn-canvas" width="700" height="300"></canvas>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ RAG -->
+    <div class="page" id="page-rag">
+      <div class="algo-explain">
+        <strong>RAG (Retrieval-Augmented Generation)</strong> enhances LLMs by retrieving relevant documents at inference time. Documents are chunked, embedded into a vector space, and stored. At query time, similar chunks are retrieved via nearest-neighbor search, then prepended to the prompt for the generator model.
+      </div>
+
+      <div class="rag-pipeline" id="rag-pipeline">
+        <div class="rag-step" id="rag-step-0"><div class="rag-icon">📄</div><div class="rag-label">Upload Docs</div></div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step" id="rag-step-1"><div class="rag-icon">✂️</div><div class="rag-label">Chunking</div></div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step" id="rag-step-2"><div class="rag-icon">🔢</div><div class="rag-label">Embed</div></div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step" id="rag-step-3"><div class="rag-icon">🗄️</div><div class="rag-label">Vector DB</div></div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step" id="rag-step-4"><div class="rag-icon">🔍</div><div class="rag-label">Search</div></div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step" id="rag-step-5"><div class="rag-icon">📝</div><div class="rag-label">Augment</div></div>
+        <div class="rag-arrow">→</div>
+        <div class="rag-step" id="rag-step-6"><div class="rag-icon">💬</div><div class="rag-label">Generate</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Document Corpus</div>
+          <div class="form-group">
+            <label>Add Document (paste text)</label>
+            <textarea id="rag-doc-input" rows="4" placeholder="Paste any text document here...">The transformer architecture revolutionized NLP by introducing self-attention mechanisms. Unlike RNNs, transformers process entire sequences in parallel, enabling much faster training on large datasets.
+
+Machine learning is a subset of artificial intelligence that enables systems to learn from data. Supervised learning uses labeled training examples to build predictive models.
+
+Deep learning neural networks with many layers can automatically learn hierarchical feature representations from raw data. CNNs excel at image recognition while RNNs handle sequential data.</textarea>
+          </div>
+          <div class="form-group">
+            <label>Chunk Size (words)</label>
+            <input type="range" min="10" max="100" value="30" id="rag-chunk-size" oninput="document.getElementById('rag-chunk-val').textContent=this.value">
+            <small style="color:var(--text3)"><span id="rag-chunk-val">30</span> words per chunk</small>
+          </div>
+          <button class="btn btn-primary" onclick="ragAddDoc()" style="width:100%">📥 Index Document</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Query Interface</div>
+          <div class="form-group">
+            <label>Your Question</label>
+            <input type="text" id="rag-query" value="What is self-attention in transformers?" placeholder="Ask anything...">
+          </div>
+          <div class="form-group">
+            <label>Top-K Chunks to Retrieve</label>
+            <input type="range" min="1" max="5" value="2" id="rag-topk" oninput="document.getElementById('rag-topk-val').textContent=this.value">
+            <small style="color:var(--text3)">k = <span id="rag-topk-val">2</span></small>
+          </div>
+          <button class="btn btn-purple" onclick="runRAG()" style="width:100%">🔍 Search & Retrieve</button>
+        </div>
+      </div>
+
+      <div class="card" id="rag-chunks-card" style="display:none;">
+        <div class="card-title">Document Chunks & Embeddings</div>
+        <div id="rag-chunks-viz"></div>
+      </div>
+
+      <div class="card" id="rag-results-card" style="display:none;">
+        <div class="card-title">Retrieval Results</div>
+        <div id="rag-results-viz"></div>
+      </div>
+
+      <div class="card" id="rag-answer-card" style="display:none;">
+        <div class="card-title">Augmented Prompt & Simulated Answer</div>
+        <div id="rag-answer-viz"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ COMPARE -->
+    <div class="page" id="page-compare">
+      <div class="card">
+        <div class="card-title">Algorithm Comparison Panel</div>
+        <p style="font-size:11px;color:var(--text2);margin-bottom:12px;">Run multiple algorithms on your dataset and compare their performance side by side.</p>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="runAllAlgos()">▶ Run All Algorithms</button>
+          <button class="btn btn-secondary" onclick="clearComparison()">🔄 Clear</button>
+        </div>
+      </div>
+      <div id="compare-results">
+        <div style="color:var(--text3);font-size:11px;text-align:center;padding:30px;">Run algorithms on a dataset to compare results</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── Service Worker self-install guard ─────────────────────────────────────────
+if (typeof ServiceWorkerGlobalScope !== 'undefined' && self instanceof ServiceWorkerGlobalScope) {
+  // This file is being executed AS a service worker
+  const CACHE = 'ml-playground-v3';
+  self.addEventListener('install', e => {
+    e.waitUntil(
+      caches.open(CACHE)
+        .then(c => c.add(new Request(self.location.href.replace('?sw=1', ''), {cache: 'reload'})))
+        .then(() => self.skipWaiting())
+    );
+  });
+  self.addEventListener('activate', e => {
+    e.waitUntil(
+      caches.keys()
+        .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+        .then(() => self.clients.claim())
+    );
+  });
+  self.addEventListener('fetch', e => {
+    // Only handle same-origin GET requests
+    if (e.request.method !== 'GET') return;
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(res => {
+          if (res && res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+          }
+          return res;
+        }).catch(() => caches.match(e.request.url.replace('?sw=1', '')));
+      })
+    );
+  });
+  // Stop executing — don't run page JS in SW context
+  throw new Error('SW_INIT_COMPLETE');
+}
+
+
+
+// CanvasRenderingContext2D.roundRect polyfill for Safari < 15.4
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    if (w < 2*r) r = w/2;
+    if (h < 2*r) r = h/2;
+    this.beginPath();
+    this.moveTo(x+r, y);
+    this.arcTo(x+w, y,   x+w, y+h, r);
+    this.arcTo(x+w, y+h, x,   y+h, r);
+    this.arcTo(x,   y+h, x,   y,   r);
+    this.arcTo(x,   y,   x+w, y,   r);
+    this.closePath();
+    return this;
+  };
+}
+// ═══════════════════════════════════════════════════════════════════════════════
+// PWA SETUP
+// ═══════════════════════════════════════════════════════════════════════════════
+const manifestData = {
+  name: "ML Playground",
+  short_name: "ML Play",
+  description: "Interactive ML/DL Algorithm Visualizer",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#07090f",
+  theme_color: "#00d4ff",
+  icons: [
+    { src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2307090f'/><text x='50' y='70' font-size='60' text-anchor='middle'>⚡</text></svg>`), sizes: "192x192", type: "image/svg+xml" },
+    { src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2307090f'/><text x='50' y='70' font-size='60' text-anchor='middle'>⚡</text></svg>`), sizes: "512x512", type: "image/svg+xml" }
+  ]
+};
+
+const manifestBlob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
+const manifestURL = URL.createObjectURL(manifestBlob);
+document.getElementById('manifest-link').setAttribute('href', manifestURL);
+
+// Inline Service Worker
+// ── Service Worker registration ───────────────────────────────────────────────
+// Only works when served from a real http/https origin (not iframe/blob/srcdoc).
+(function() {
+  if (!('serviceWorker' in navigator)) return;
+  // Bail out silently for non-registerable origins (about:, blob:, data:, srcdoc)
+  const proto = location.protocol;
+  if (proto !== 'https:' && proto !== 'http:') return;
+  // Also bail if we're inside a sandboxed iframe (no allow-same-origin)
+  try { if (!window.origin || window.origin === 'null') return; } catch(e) { return; }
+
+  navigator.serviceWorker.register(location.href + '?sw=1', { scope: './' })
+    .then(r => {
+      document.getElementById('offline-badge').textContent = '● Offline Ready';
+      console.log('SW registered:', r.scope);
+    })
+    .catch(() => {}); // silently ignore — app still works without SW
+})();
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').style.display = 'block';
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(r => {
+      if (r.outcome === 'accepted') document.getElementById('install-btn').style.display = 'none';
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GLOBAL STATE
+// ═══════════════════════════════════════════════════════════════════════════════
+let state = {
+  rawData: null,
+  headers: [],
+  processedData: null,
+  features: [],
+  target: null,
+  trainX: [], trainY: [],
+  testX: [], testY: [],
+  charts: {},
+  theme: 'dark',
+  clusterPoints: [],
+  hcPoints: null,
+  gnnGraph: null,
+  ragDocs: [],
+  algoResults: {},
+  fnnModel: null,
+  rnnState: null
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  if (page) page.classList.add('active');
+  const titles = {
+    'dataset': 'Dataset Manager', 'linear-reg': 'Linear Regression',
+    'logistic-reg': 'Logistic Regression', 'naive-bayes': 'Naive Bayes',
+    'svm': 'Support Vector Machine', 'decision-tree': 'Decision Tree',
+    'kmeans': 'K-Means Clustering', 'hierarchical': 'Hierarchical Clustering',
+    'dbscan': 'DBSCAN', 'pca': 'Principal Component Analysis',
+    'fnn': 'Feedforward Neural Network', 'cnn': 'Convolutional Neural Network',
+    'rnn': 'Recurrent Neural Network', 'transformer': 'Transformer Model',
+    'gnn': 'Graph Neural Network', 'rag': 'RAG Pipeline Simulator',
+    'compare': 'Algorithm Comparison'
+  };
+  document.getElementById('topbar-title').textContent = titles[name] || name;
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const fn = n.getAttribute('onclick') || '';
+    if (fn.includes("'" + name + "'")) n.classList.add('active');
+  });
+  if (name === 'kmeans' && state.clusterPoints.length === 0) generateClusterData();
+  if (name === 'dbscan' && state.clusterPoints.length === 0) generateNoiseData();
+  if (name === 'hierarchical' && !state.hcPoints) generateClusterData2();
+  if (name === 'cnn') initCNNDemo();
+  if (name === 'gnn') buildGNNGraph();
+  if (name === 'rnn') initRNNViz();
+  if (name === 'transformer') initTransformerViz();
+  if (window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  document.body.classList.toggle('light-mode', state.theme === 'light');
+  document.getElementById('theme-label').textContent = state.theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATASET MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════════
+function loadCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => parseCSV(e.target.result, file.name);
+  reader.readAsText(file);
+}
+
+function parseCSV(text, name = 'dataset.csv') {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return alert('CSV needs at least a header + 1 row');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g,''));
+  const rows = lines.slice(1).map(l => {
+    const vals = l.split(',').map(v => v.trim().replace(/"/g,''));
+    return headers.reduce((o, h, i) => { o[h] = vals[i]; return o; }, {});
+  });
+  state.rawData = rows;
+  state.headers = headers;
+  state.features = headers.slice(0,-1);
+  state.target = headers[headers.length - 1];
+  saveToLocalStorage('dataset', { rows, headers, name });
+  renderDatasetUI(name);
+}
+
+function renderDatasetUI(name) {
+  document.getElementById('dataset-badge').textContent = name || 'Dataset';
+  document.getElementById('dataset-config-card').style.display = 'block';
+  document.getElementById('data-preview-card').style.display = 'block';
+  renderDataSummary();
+  renderFeatureChips();
+  renderTargetOptions();
+  renderDataPreview();
+}
+
+function renderDataSummary() {
+  const data = state.rawData;
+  if (!data) return;
+  const num = col => {
+    const vals = data.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+    if (!vals.length) return null;
+    const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
+    const std = Math.sqrt(vals.reduce((a,b)=>a+(b-mean)**2,0)/vals.length);
+    return { mean: mean.toFixed(3), std: std.toFixed(3), min: Math.min(...vals).toFixed(3), max: Math.max(...vals).toFixed(3) };
+  };
+  const missing = col => data.filter(r => !r[col] || r[col]==='').length;
+  let html = `<div class="metric-row">
+    <div class="metric"><div class="metric-val">${data.length}</div><div class="metric-label">Rows</div></div>
+    <div class="metric"><div class="metric-val">${state.headers.length}</div><div class="metric-label">Columns</div></div>
+    <div class="metric"><div class="metric-val">${state.headers.filter(h=>num(h)).length}</div><div class="metric-label">Numeric</div></div>
+    <div class="metric"><div class="metric-val">${state.headers.reduce((a,h)=>a+missing(h),0)}</div><div class="metric-label">Missing</div></div>
+  </div>`;
+  document.getElementById('dataset-summary').innerHTML = html;
+}
+
+function renderFeatureChips() {
+  const container = document.getElementById('feature-chips');
+  container.innerHTML = state.headers.map(h =>
+    `<span class="chip ${state.features.includes(h)?'selected':''}" onclick="toggleFeature('${h}',this)">${h}</span>`
+  ).join('');
+}
+
+function toggleFeature(h, el) {
+  if (state.features.includes(h)) {
+    state.features = state.features.filter(f => f !== h);
+    el.classList.remove('selected');
+  } else {
+    state.features.push(h);
+    el.classList.add('selected');
+  }
+}
+
+function renderTargetOptions() {
+  const sel = document.getElementById('target-col');
+  sel.innerHTML = state.headers.map(h => `<option value="${h}" ${h===state.target?'selected':''}>${h}</option>`).join('');
+}
+
+function renderDataPreview() {
+  const data = state.rawData;
+  if (!data) return;
+  const preview = data.slice(0, 50);
+  document.getElementById('preview-badge').textContent = `${preview.length}/${data.length} rows`;
+  const thead = `<thead><tr>${state.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>`;
+  const tbody = `<tbody>${preview.map(r=>`<tr>${state.headers.map(h=>`<td>${r[h]??''}</td>`).join('')}</tr>`).join('')}</tbody>`;
+  document.getElementById('data-table').innerHTML = thead + tbody;
+}
+
+function updateSplitLabel(v) {
+  document.getElementById('split-label').textContent = `${v}% / ${100-v}%`;
+}
+
+function applyDataConfig() {
+  if (!state.rawData) return alert('Please load a dataset first');
+  state.target = document.getElementById('target-col').value;
+  const missing = document.getElementById('missing-strategy').value;
+  const norm = document.getElementById('norm-strategy').value;
+  const split = parseInt(document.getElementById('split-slider').value) / 100;
+
+  let data = [...state.rawData];
+
+  // Handle missing values
+  if (missing === 'drop') {
+    data = data.filter(r => state.features.every(f => r[f] !== '' && r[f] !== undefined));
+  } else {
+    state.features.forEach(f => {
+      const vals = data.map(r => parseFloat(r[f])).filter(v => !isNaN(v));
+      const fill = missing === 'mean' ? vals.reduce((a,b)=>a+b,0)/vals.length
+        : missing === 'median' ? vals.sort((a,b)=>a-b)[Math.floor(vals.length/2)]
+        : 0;
+      data.forEach(r => { if (r[f]==='' || isNaN(parseFloat(r[f]))) r[f] = fill; });
+    });
+  }
+
+  // Extract X, y
+  let X = data.map(r => state.features.map(f => parseFloat(r[f]) || 0));
+  let y = data.map(r => r[state.target]);
+
+  // Normalize
+  if (norm !== 'none') {
+    const means = state.features.map((_, j) => X.reduce((s,r)=>s+r[j],0)/X.length);
+    const stds  = state.features.map((_, j) => {
+      const m = means[j];
+      return Math.sqrt(X.reduce((s,r)=>s+(r[j]-m)**2,0)/X.length) || 1;
+    });
+    const mins = state.features.map((_, j) => Math.min(...X.map(r=>r[j])));
+    const maxs = state.features.map((_, j) => Math.max(...X.map(r=>r[j])));
+    X = X.map(r => r.map((v, j) =>
+      norm === 'zscore' ? (v - means[j]) / stds[j]
+        : (v - mins[j]) / (maxs[j] - mins[j] || 1)
+    ));
+    state.norm = { type: norm, means, stds, mins, maxs };
+  }
+
+  // Encode labels
+  const classes = [...new Set(y)];
+  state.classes = classes;
+  const yEncoded = y.map(v => classes.indexOf(v));
+
+  // Shuffle
+  const idx = X.map((_,i)=>i).sort(()=>Math.random()-0.5);
+  const XS = idx.map(i=>X[i]), yS = idx.map(i=>yEncoded[i]);
+
+  const n = Math.floor(XS.length * split);
+  state.trainX = XS.slice(0, n);
+  state.trainY = yS.slice(0, n);
+  state.testX = XS.slice(n);
+  state.testY = yS.slice(n);
+  state.processedData = data;
+
+  alert(`✅ Dataset configured!\nTrain: ${state.trainX.length} | Test: ${state.testX.length}\nFeatures: ${state.features.length} | Classes: ${classes.length}`);
+  saveToLocalStorage('config', { features: state.features, target: state.target, classes });
+}
+
+function resetDataset() {
+  state.rawData = null; state.headers = []; state.processedData = null;
+  state.features = []; state.target = null;
+  document.getElementById('dataset-config-card').style.display = 'none';
+  document.getElementById('data-preview-card').style.display = 'none';
+  document.getElementById('dataset-summary').innerHTML = '<div style="color:var(--text3);font-size:11px;text-align:center;padding:20px;">No dataset loaded</div>';
+  document.getElementById('dataset-badge').textContent = 'No Dataset';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SAMPLE DATASETS
+// ═══════════════════════════════════════════════════════════════════════════════
+function loadSample(name) {
+  const samples = {
+    iris: () => {
+      const d1=[[5.1,3.5,1.4,0.2,'Iris-setosa'],[4.9,3.0,1.4,0.2,'Iris-setosa'],[4.7,3.2,1.3,0.2,'Iris-setosa'],[4.6,3.1,1.5,0.2,'Iris-setosa'],[5.0,3.6,1.4,0.2,'Iris-setosa'],[5.4,3.9,1.7,0.4,'Iris-setosa'],[4.6,3.4,1.4,0.3,'Iris-setosa'],[5.0,3.4,1.5,0.2,'Iris-setosa'],[4.4,2.9,1.4,0.2,'Iris-setosa'],[4.9,3.1,1.5,0.1,'Iris-setosa'],[5.4,3.7,1.5,0.2,'Iris-setosa'],[4.8,3.4,1.6,0.2,'Iris-setosa'],[4.8,3.0,1.4,0.1,'Iris-setosa'],[4.3,3.0,1.1,0.1,'Iris-setosa'],[5.8,4.0,1.2,0.2,'Iris-setosa'],[5.7,4.4,1.5,0.4,'Iris-setosa'],[5.4,3.9,1.3,0.4,'Iris-setosa'],[5.1,3.5,1.4,0.3,'Iris-setosa'],[5.7,3.8,1.7,0.3,'Iris-setosa'],[5.1,3.8,1.5,0.3,'Iris-setosa'],[7.0,3.2,4.7,1.4,'Iris-versicolor'],[6.4,3.2,4.5,1.5,'Iris-versicolor'],[6.9,3.1,4.9,1.5,'Iris-versicolor'],[5.5,2.3,4.0,1.3,'Iris-versicolor'],[6.5,2.8,4.6,1.5,'Iris-versicolor'],[5.7,2.8,4.5,1.3,'Iris-versicolor'],[6.3,3.3,4.7,1.6,'Iris-versicolor'],[4.9,2.4,3.3,1.0,'Iris-versicolor'],[6.6,2.9,4.6,1.3,'Iris-versicolor'],[5.2,2.7,3.9,1.4,'Iris-versicolor'],[5.0,2.0,3.5,1.0,'Iris-versicolor'],[5.9,3.0,4.2,1.5,'Iris-versicolor'],[6.0,2.2,4.0,1.0,'Iris-versicolor'],[6.1,2.9,4.7,1.4,'Iris-versicolor'],[5.6,2.9,3.6,1.3,'Iris-versicolor'],[6.3,3.3,6.0,2.5,'Iris-virginica'],[5.8,2.7,5.1,1.9,'Iris-virginica'],[7.1,3.0,5.9,2.1,'Iris-virginica'],[6.3,2.9,5.6,1.8,'Iris-virginica'],[6.5,3.0,5.8,2.2,'Iris-virginica'],[7.6,3.0,6.6,2.1,'Iris-virginica'],[4.9,2.5,4.5,1.7,'Iris-virginica'],[7.3,2.9,6.3,1.8,'Iris-virginica'],[6.7,2.5,5.8,1.8,'Iris-virginica'],[7.2,3.6,6.1,2.5,'Iris-virginica'],[6.5,3.2,5.1,2.0,'Iris-virginica'],[6.4,2.7,5.3,1.9,'Iris-virginica'],[6.8,3.0,5.5,2.1,'Iris-virginica'],[5.7,2.5,5.0,2.0,'Iris-virginica'],[5.8,2.8,5.1,2.4,'Iris-virginica']];
+      const hdr = ['sepal_length','sepal_width','petal_length','petal_width','species'];
+      return { rows: d1.map(r => hdr.reduce((o,h,i)=>({...o,[h]:r[i]}),{})), headers: hdr, name: 'Iris Dataset' };
+    },
+    titanic: () => {
+      const rows = [];
+      const passengers = [[1,1,22,0,'male'],[2,1,38,1,'female'],[3,1,26,0,'female'],[4,1,35,1,'female'],[5,0,35,0,'male'],[6,0,30,0,'male'],[7,0,54,0,'male'],[8,0,2,1,'male'],[9,1,27,1,'female'],[10,1,14,1,'female'],[11,1,4,1,'female'],[12,1,58,0,'female'],[13,0,20,0,'male'],[14,0,39,0,'male'],[15,0,14,0,'female'],[16,1,55,0,'female'],[17,0,2,1,'male'],[18,1,30,0,'male'],[19,0,31,0,'female'],[20,1,35,0,'female'],[21,0,34,0,'male'],[22,1,15,0,'female'],[23,1,28,0,'female'],[24,1,8,1,'female'],[25,0,38,0,'male'],[26,1,30,0,'female'],[27,0,19,0,'male'],[28,0,40,0,'male'],[29,1,29,0,'female'],[30,0,32,1,'male']];
+      return { rows: passengers.map(r=>({pclass:r[1],age:r[2],sibsp:r[3],sex:r[4]==='male'?1:0,survived:r[0]})), headers:['pclass','age','sibsp','sex','survived'], name:'Titanic Dataset' };
+    },
+    housing: () => {
+      const rows = [];
+      for (let i=0; i<50; i++) {
+        const size = 800 + Math.random()*2000;
+        const rooms = Math.floor(size/300 + Math.random()*2);
+        const age = Math.floor(Math.random()*50);
+        const price = Math.floor(size*150 + rooms*8000 - age*500 + (Math.random()-0.5)*50000);
+        rows.push({size:Math.round(size), rooms, age, price: Math.max(50000,price)});
+      }
+      return { rows, headers:['size','rooms','age','price'], name:'Housing Dataset' };
+    },
+    mnist: () => {
+      const rows = [];
+      for (let i=0; i<80; i++) {
+        const digit = i % 10;
+        const px1 = 0.5+Math.cos(digit*0.628)*(0.3+Math.random()*0.15);
+        const px2 = 0.5+Math.sin(digit*0.628)*(0.3+Math.random()*0.15);
+        const px3 = digit/10 + Math.random()*0.1;
+        const px4 = (digit%3)/3 + Math.random()*0.1;
+        rows.push({f1:px1.toFixed(3), f2:px2.toFixed(3), f3:px3.toFixed(3), f4:px4.toFixed(3), digit});
+      }
+      return { rows, headers:['f1','f2','f3','f4','digit'], name:'MNIST-like' };
+    }
+  };
+
+  const ds = samples[name]?.();
+  if (ds) {
+    state.rawData = ds.rows;
+    state.headers = ds.headers;
+    state.features = ds.headers.slice(0,-1);
+    state.target = ds.headers[ds.headers.length-1];
+    renderDatasetUI(ds.name);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MATH UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+const math = {
+  dot: (a,b) => a.reduce((s,v,i)=>s+v*b[i],0),
+  add: (a,b) => a.map((v,i)=>v+b[i]),
+  scale: (a,s) => a.map(v=>v*s),
+  sigmoid: x => 1/(1+Math.exp(-Math.max(-500,Math.min(500,x)))),
+  relu: x => Math.max(0,x),
+  tanh: x => Math.tanh(x),
+  softmax: arr => { const m=Math.max(...arr); const e=arr.map(v=>Math.exp(v-m)); const s=e.reduce((a,b)=>a+b,0); return e.map(v=>v/s); },
+  mean: arr => arr.reduce((a,b)=>a+b,0)/arr.length,
+  std: arr => { const m=math.mean(arr); return Math.sqrt(arr.reduce((s,v)=>s+(v-m)**2,0)/arr.length); },
+  euclidean: (a,b) => Math.sqrt(a.reduce((s,v,i)=>s+(v-b[i])**2,0)),
+  manhattan: (a,b) => a.reduce((s,v,i)=>s+Math.abs(v-b[i]),0),
+  transpose: m => m[0].map((_,i)=>m.map(r=>r[i])),
+  matMul: (A,B) => A.map(r=>math.transpose(B).map(c=>math.dot(r,c))),
+};
+
+function accuracy(yTrue, yPred) {
+  return yTrue.filter((v,i)=>v===yPred[i]).length/yTrue.length;
+}
+
+function f1Score(yTrue, yPred) {
+  const classes = [...new Set(yTrue)];
+  const f1s = classes.map(c => {
+    const tp = yTrue.filter((v,i)=>v===c && yPred[i]===c).length;
+    const fp = yPred.filter((v,i)=>yTrue[i]!==c && v===c).length;
+    const fn = yTrue.filter((v,i)=>v===c && yPred[i]!==c).length;
+    const p = tp/(tp+fp||1), r = tp/(tp+fn||1);
+    return 2*p*r/(p+r||1);
+  });
+  return f1s.reduce((a,b)=>a+b,0)/f1s.length;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CHART HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+function destroyChart(id) {
+  if (state.charts[id]) { state.charts[id].destroy(); delete state.charts[id]; }
+}
+
+function getChartDefaults() {
+  return {
+    responsive: true,
+    animation: { duration: 600 },
+    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } } } },
+    scales: {
+      x: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { color: '#1e2d4a' } },
+      y: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { color: '#1e2d4a' } }
+    }
+  };
+}
+
+const CLUSTER_COLORS = ['#00d4ff','#7c3aed','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6','#06b6d4','#84cc16','#f97316'];
+
+function lossChart(canvasId, losses, label='Loss') {
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  state.charts[canvasId] = new Chart(ctx, {
+    type: 'line',
+    data: { labels: losses.map((_,i)=>i+1), datasets: [{ label, data: losses, borderColor:'#00d4ff', backgroundColor:'rgba(0,212,255,0.1)', tension:0.4, pointRadius:0, borderWidth:2 }] },
+    options: { ...getChartDefaults(), plugins: { legend: { display: false } } }
+  });
+}
+
+function updateMetrics(containerId, vals) {
+  const cont = document.getElementById(containerId);
+  const divs = cont.querySelectorAll('.metric-val');
+  vals.forEach((v, i) => { if (divs[i]) divs[i].textContent = v; });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LINEAR REGRESSION
+// ═══════════════════════════════════════════════════════════════════════════════
+function runLinearRegression() {
+  if (!state.trainX.length) return alert('Please load and configure a dataset first');
+  const lr = parseInt(document.getElementById('lr-lr').value)/1000;
+  const epochs = parseInt(document.getElementById('lr-epochs').value);
+  const lambda = parseInt(document.getElementById('lr-reg').value)/1000;
+  const X = state.trainX, y = state.trainY;
+  const n = X.length, d = X[0].length;
+
+  let w = new Array(d).fill(0), b = 0;
+  const losses = [];
+
+  for (let e = 0; e < epochs; e++) {
+    const preds = X.map(xi => math.dot(xi, w) + b);
+    const errs = preds.map((p, i) => p - y[i]);
+    const loss = errs.reduce((s,e)=>s+e*e,0)/n;
+    losses.push(loss);
+    const dw = w.map((_, j) => errs.reduce((s,err,i)=>s+err*X[i][j],0)/n + lambda*w[j]);
+    const db = errs.reduce((s,e)=>s+e,0)/n;
+    w = w.map((v,j) => v - lr*dw[j]);
+    b = b - lr*db;
+  }
+
+  state.lrModel = { w, b };
+  const testPreds = state.testX.map(xi => math.dot(xi, w) + b);
+  const yMean = math.mean(state.testY);
+  const ssTot = state.testY.reduce((s,v)=>s+(v-yMean)**2,0);
+  const ssRes = state.testY.reduce((s,v,i)=>s+(v-testPreds[i])**2,0);
+  const r2 = 1 - ssRes/ssTot;
+  const mse = ssRes/state.testY.length;
+  const mae = state.testY.reduce((s,v,i)=>s+Math.abs(v-testPreds[i]),0)/state.testY.length;
+
+  updateMetrics('lr-metrics', [r2.toFixed(3), mse.toFixed(3), mae.toFixed(3), Math.sqrt(mse).toFixed(3)]);
+  lossChart('lr-loss-chart', losses, 'MSE Loss');
+
+  destroyChart('lr-scatter-chart');
+  const ctx = document.getElementById('lr-scatter-chart').getContext('2d');
+  state.charts['lr-scatter-chart'] = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { label: 'Actual vs Predicted', data: state.testY.map((v,i)=>({x:v,y:testPreds[i]})), backgroundColor:'rgba(0,212,255,0.6)', pointRadius:4 },
+        { label: 'Perfect Fit', data: [{x:Math.min(...state.testY),y:Math.min(...state.testY)},{x:Math.max(...state.testY),y:Math.max(...state.testY)}], type:'line', borderColor:'#ef4444', borderDash:[4,4], pointRadius:0 }
+      ]
+    },
+    options: { ...getChartDefaults() }
+  });
+  saveToLocalStorage('lr_result', { r2, mse, mae, w, b });
+}
+
+function predictLinear() {
+  if (!state.lrModel) return;
+  const vals = document.getElementById('lr-pred-input').value.split(',').map(Number);
+  const pred = math.dot(vals, state.lrModel.w) + state.lrModel.b;
+  document.getElementById('lr-pred-result').textContent = `Prediction: ${pred.toFixed(4)}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOGISTIC REGRESSION
+// ═══════════════════════════════════════════════════════════════════════════════
+function runLogisticRegression() {
+  if (!state.trainX.length) return alert('Please load and configure a dataset first');
+  const lr = parseInt(document.getElementById('log-lr').value)/1000;
+  const epochs = parseInt(document.getElementById('log-epochs').value);
+  const thresh = parseInt(document.getElementById('log-thresh').value)/100;
+  const X = state.trainX, y = state.trainY.map(v => v > 0 ? 1 : 0);
+  const n = X.length, d = X[0].length;
+
+  let w = new Array(d).fill(0), b = 0;
+  const losses = [];
+
+  for (let e = 0; e < epochs; e++) {
+    const preds = X.map(xi => math.sigmoid(math.dot(xi, w) + b));
+    const loss = -y.reduce((s,yi,i)=>s+yi*Math.log(preds[i]+1e-10)+(1-yi)*Math.log(1-preds[i]+1e-10),0)/n;
+    losses.push(loss);
+    const errs = preds.map((p,i)=>p-y[i]);
+    const dw = w.map((_,j)=>errs.reduce((s,e,i)=>s+e*X[i][j],0)/n);
+    const db = errs.reduce((a,b)=>a+b,0)/n;
+    w = w.map((v,j)=>v-lr*dw[j]);
+    b = b - lr*db;
+  }
+
+  state.logModel = { w, b, thresh };
+  const testPreds = state.testX.map(xi => math.sigmoid(math.dot(xi, w) + b));
+  const testBinary = testPreds.map(p => p >= thresh ? 1 : 0);
+  const yBin = state.testY.map(v => v > 0 ? 1 : 0);
+
+  const tp = yBin.filter((v,i)=>v===1&&testBinary[i]===1).length;
+  const fp = yBin.filter((v,i)=>v===0&&testBinary[i]===1).length;
+  const fn = yBin.filter((v,i)=>v===1&&testBinary[i]===0).length;
+  const prec = tp/(tp+fp||1), rec = tp/(tp+fn||1);
+  const acc = accuracy(yBin, testBinary);
+
+  updateMetrics('log-metrics', [
+    (acc*100).toFixed(1)+'%',
+    prec.toFixed(3),
+    rec.toFixed(3),
+    (2*prec*rec/(prec+rec||1)).toFixed(3)
+  ]);
+
+  document.getElementById('log-conf-matrix').innerHTML = `
+    <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Confusion Matrix:</div>
+    <table style="font-size:10px;width:auto;"><thead><tr><th></th><th style="color:var(--accent3)">Pred 0</th><th style="color:var(--accent5)">Pred 1</th></tr></thead>
+    <tbody>
+      <tr><td style="color:var(--text2)">Act 0</td><td style="color:var(--accent3)">${yBin.filter((v,i)=>v===0&&testBinary[i]===0).length}</td><td style="color:var(--accent5)">${fp}</td></tr>
+      <tr><td style="color:var(--text2)">Act 1</td><td style="color:var(--accent5)">${fn}</td><td style="color:var(--accent3)">${tp}</td></tr>
+    </tbody></table>`;
+
+  lossChart('log-loss-chart', losses, 'BCE Loss');
+
+  // Decision boundary (2D projection of first 2 features)
+  destroyChart('log-boundary-chart');
+  const ctx = document.getElementById('log-boundary-chart').getContext('2d');
+  const f0 = state.testX.map(r=>r[0]), f1 = state.testX.map(r=>r[1]||0);
+  const pts = [{label:'Class 0',data:[],bg:'rgba(239,68,68,0.5)'},{label:'Class 1',data:[],bg:'rgba(0,212,255,0.5)'}];
+  yBin.forEach((y,i)=>pts[y].data.push({x:f0[i],y:f1[i]}));
+  state.charts['log-boundary-chart'] = new Chart(ctx, {
+    type:'scatter',
+    data:{ datasets: pts.map((p,ci)=>({label:p.label,data:p.data,backgroundColor:p.bg,pointRadius:5})) },
+    options: { ...getChartDefaults() }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NAIVE BAYES
+// ═══════════════════════════════════════════════════════════════════════════════
+function runNaiveBayes() {
+  if (!state.trainX.length) return alert('Please load and configure a dataset first');
+  const X = state.trainX, y = state.trainY;
+  const classes = [...new Set(y)];
+  const smooth = parseInt(document.getElementById('nb-smooth').value);
+
+  const priors = {}, means = {}, vars = {};
+  classes.forEach(c => {
+    const idx = y.map((v,i)=>v===c?i:-1).filter(i=>i>=0);
+    priors[c] = idx.length / y.length;
+    means[c] = X[0].map((_,j) => math.mean(idx.map(i=>X[i][j])));
+    vars[c] = X[0].map((_,j) => {
+      const vals = idx.map(i=>X[i][j]);
+      const m = math.mean(vals);
+      return Math.max(1e-6, vals.reduce((s,v)=>s+(v-m)**2,0)/vals.length + smooth*0.01);
+    });
+  });
+
+  const predict = xi => {
+    const logProbs = classes.map(c => {
+      let lp = Math.log(priors[c]);
+      xi.forEach((x,j) => {
+        const m=means[c][j], v=vars[c][j];
+        lp += -0.5*Math.log(2*Math.PI*v) - (x-m)**2/(2*v);
+      });
+      return lp;
+    });
+    return classes[logProbs.indexOf(Math.max(...logProbs))];
+  };
+
+  const preds = state.testX.map(predict);
+  const acc = accuracy(state.testY, preds);
+  updateMetrics('nb-metrics', [(acc*100).toFixed(1)+'%', '—', '—', f1Score(state.testY,preds).toFixed(3)]);
+
+  // Distribution chart
+  destroyChart('nb-dist-chart');
+  const ctx1 = document.getElementById('nb-dist-chart').getContext('2d');
+  state.charts['nb-dist-chart'] = new Chart(ctx1, {
+    type:'bar',
+    data:{
+      labels: classes.map(c=>'Class '+c),
+      datasets:[{label:'Prior Probability',data:classes.map(c=>priors[c].toFixed(3)),backgroundColor:classes.map((_,i)=>CLUSTER_COLORS[i]+'99'),borderColor:classes.map((_,i)=>CLUSTER_COLORS[i]),borderWidth:2}]
+    },
+    options:{ ...getChartDefaults() }
+  });
+
+  // Feature importance
+  destroyChart('nb-feat-chart');
+  const ctx2 = document.getElementById('nb-feat-chart').getContext('2d');
+  const importance = state.features.map((_,j) => {
+    const allMeans = classes.map(c=>means[c][j]);
+    return Math.max(...allMeans)-Math.min(...allMeans);
+  });
+  state.charts['nb-feat-chart'] = new Chart(ctx2, {
+    type:'bar',
+    data:{labels:state.features,datasets:[{label:'Mean Difference',data:importance,backgroundColor:'rgba(124,58,237,0.6)',borderColor:'#7c3aed',borderWidth:2}]},
+    options:{ ...getChartDefaults(), indexAxis:'y' }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SVM (SGD-based linear SVM)
+// ═══════════════════════════════════════════════════════════════════════════════
+function runSVM() {
+  if (!state.trainX.length) return alert('Please load and configure a dataset first');
+  const C = parseInt(document.getElementById('svm-c').value);
+  const epochs = parseInt(document.getElementById('svm-epochs').value);
+  const X = state.trainX, y = state.trainY.map(v=>v>0?1:-1);
+  const n = X.length, d = X[0].length;
+
+  let w = new Array(d).fill(0), b = 0;
+  const losses = [];
+  let lr = 0.01;
+
+  for (let e = 0; e < epochs; e++) {
+    let totalLoss = 0;
+    const idxs = X.map((_,i)=>i).sort(()=>Math.random()-0.5);
+    idxs.forEach(i => {
+      const margin = y[i] * (math.dot(X[i], w) + b);
+      const hingeLoss = Math.max(0, 1 - margin);
+      totalLoss += 0.5*math.dot(w,w)/C + hingeLoss;
+      if (margin < 1) {
+        w = w.map((wj,j)=>wj*(1-lr/C)+lr*y[i]*X[i][j]);
+        b = b + lr*y[i];
+      } else {
+        w = w.map(wj=>wj*(1-lr/C));
+      }
+    });
+    losses.push(totalLoss/n);
+    lr *= 0.999;
+  }
+
+  state.svmModel = { w, b };
+  const preds = state.testX.map(xi => math.dot(xi,w)+b >= 0 ? 1 : 0);
+  const yBin = state.testY.map(v=>v>0?1:0);
+  const acc = accuracy(yBin, preds);
+  const svCount = X.filter((xi,i)=>Math.abs(y[i]*(math.dot(xi,w)+b)-1)<0.2).length;
+  const margin = 2/Math.sqrt(math.dot(w,w)||1);
+
+  updateMetrics('svm-metrics', [(acc*100).toFixed(1)+'%', svCount, margin.toFixed(3), f1Score(yBin,preds).toFixed(3)]);
+  lossChart('svm-loss-chart', losses, 'Hinge Loss');
+
+  // Boundary
+  destroyChart('svm-boundary-chart');
+  const ctx = document.getElementById('svm-boundary-chart').getContext('2d');
+  const f0 = state.testX.map(r=>r[0]), f1 = state.testX.map(r=>r[1]||0);
+  const pts = [{label:'Class -1',data:[],bg:'rgba(239,68,68,0.5)'},{label:'Class +1',data:[],bg:'rgba(0,212,255,0.5)'}];
+  yBin.forEach((y,i)=>pts[y].data.push({x:f0[i],y:f1[i]}));
+  state.charts['svm-boundary-chart'] = new Chart(ctx, {
+    type:'scatter',
+    data:{datasets:pts.map(p=>({label:p.label,data:p.data,backgroundColor:p.bg,pointRadius:5}))},
+    options:{...getChartDefaults()}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DECISION TREE
+// ═══════════════════════════════════════════════════════════════════════════════
+class DecisionTreeNode {
+  constructor() { this.feature=null; this.threshold=null; this.left=null; this.right=null; this.value=null; this.depth=0; }
+}
+
+function gini(labels) {
+  const classes = [...new Set(labels)];
+  return 1 - classes.reduce((s,c)=>{ const p=labels.filter(l=>l===c).length/labels.length; return s+p*p; },0);
+}
+
+function entropy(labels) {
+  const classes = [...new Set(labels)];
+  return -classes.reduce((s,c)=>{ const p=labels.filter(l=>l===c).length/labels.length; return s+(p>0?p*Math.log2(p):0); },0);
+}
+
+function buildTree(X, y, depth=0, maxDepth=4, minSplit=2, criterion='Gini') {
+  const node = new DecisionTreeNode();
+  node.depth = depth;
+  if (depth >= maxDepth || y.length < minSplit || new Set(y).size === 1) {
+    const counts = {}; y.forEach(v=>counts[v]=(counts[v]||0)+1);
+    node.value = parseInt(Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0]);
+    return node;
+  }
+  let bestGain = -Infinity, bestF = 0, bestT = 0;
+  const impFn = criterion === 'Gini' ? gini : entropy;
+  const parentImp = impFn(y);
+
+  for (let f = 0; f < X[0].length; f++) {
+    const vals = [...new Set(X.map(r=>r[f]))].sort((a,b)=>a-b);
+    for (let t = 0; t < vals.length-1; t++) {
+      const thresh = (vals[t]+vals[t+1])/2;
+      const leftIdx = X.map((_,i)=>i).filter(i=>X[i][f]<=thresh);
+      const rightIdx = X.map((_,i)=>i).filter(i=>X[i][f]>thresh);
+      if (!leftIdx.length||!rightIdx.length) continue;
+      const lImp = impFn(leftIdx.map(i=>y[i]));
+      const rImp = impFn(rightIdx.map(i=>y[i]));
+      const gain = parentImp - (leftIdx.length*lImp+rightIdx.length*rImp)/y.length;
+      if (gain > bestGain) { bestGain=gain; bestF=f; bestT=thresh; }
+    }
+  }
+
+  if (bestGain <= 0) {
+    const counts={}; y.forEach(v=>counts[v]=(counts[v]||0)+1);
+    node.value = parseInt(Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0]);
+    return node;
+  }
+
+  node.feature = bestF; node.threshold = bestT;
+  const lIdx=X.map((_,i)=>i).filter(i=>X[i][bestF]<=bestT);
+  const rIdx=X.map((_,i)=>i).filter(i=>X[i][bestF]>bestT);
+  node.left = buildTree(lIdx.map(i=>X[i]),lIdx.map(i=>y[i]),depth+1,maxDepth,minSplit,criterion);
+  node.right = buildTree(rIdx.map(i=>X[i]),rIdx.map(i=>y[i]),depth+1,maxDepth,minSplit,criterion);
+  return node;
+}
+
+function predictTree(node, x) {
+  if (node.value !== null) return node.value;
+  return x[node.feature] <= node.threshold ? predictTree(node.left, x) : predictTree(node.right, x);
+}
+
+function runDecisionTree() {
+  if (!state.trainX.length) return alert('Please load and configure a dataset first');
+  const maxDepth = parseInt(document.getElementById('dt-depth').value);
+  const criterion = document.getElementById('dt-criterion').value;
+  const minSplit = parseInt(document.getElementById('dt-min-split').value);
+
+  const tree = buildTree(state.trainX, state.trainY, 0, maxDepth, minSplit, criterion);
+  state.dtModel = tree;
+
+  const preds = state.testX.map(xi=>predictTree(tree, xi));
+  const acc = accuracy(state.testY, preds);
+
+  let leaves=0, maxD=0;
+  const count = (node,d=0)=>{ maxD=Math.max(maxD,d); if(node.value!==null){leaves++;return;} count(node.left,d+1); count(node.right,d+1); };
+  count(tree);
+
+  updateMetrics('dt-metrics', [(acc*100).toFixed(1)+'%', maxD, leaves, f1Score(state.testY,preds).toFixed(3)]);
+
+  // Feature importance via gain
+  const importance = new Array(state.features.length).fill(0);
+  const countGain = node => {
+    if (node.value!==null) return;
+    importance[node.feature] = (importance[node.feature]||0)+1;
+    if(node.left) countGain(node.left);
+    if(node.right) countGain(node.right);
+  };
+  countGain(tree);
+  const total = importance.reduce((a,b)=>a+b,1);
+  const norm = importance.map(v=>v/total);
+
+  destroyChart('dt-feat-chart');
+  const ctx1 = document.getElementById('dt-feat-chart').getContext('2d');
+  state.charts['dt-feat-chart'] = new Chart(ctx1, {
+    type:'bar',
+    data:{labels:state.features,datasets:[{label:'Importance',data:norm,backgroundColor:'rgba(16,185,129,0.6)',borderColor:'#10b981',borderWidth:2}]},
+    options:{...getChartDefaults(),indexAxis:'y'}
+  });
+
+  // Tree visualization
+  const canvas = document.getElementById('dt-tree-chart');
+  const ctx2 = canvas.getContext('2d');
+  ctx2.clearRect(0,0,canvas.width,canvas.height);
+  const drawTree = (node,x,y,w) => {
+    const col = node.value!==null ? CLUSTER_COLORS[node.value%CLUSTER_COLORS.length] : '#00d4ff';
+    ctx2.beginPath(); ctx2.arc(x,y,14,0,Math.PI*2); ctx2.fillStyle=col+'33'; ctx2.fill(); ctx2.strokeStyle=col; ctx2.lineWidth=2; ctx2.stroke();
+    ctx2.fillStyle='#e2e8f0'; ctx2.font='9px JetBrains Mono'; ctx2.textAlign='center'; ctx2.textBaseline='middle';
+    ctx2.fillText(node.value!==null?'C'+node.value:'f'+node.feature, x, y);
+    if(node.left){ctx2.strokeStyle='#1e2d4a';ctx2.lineWidth=1;ctx2.beginPath();ctx2.moveTo(x,y+14);ctx2.lineTo(x-w/2,y+50);ctx2.stroke(); drawTree(node.left,x-w/2,y+50,w/2);}
+    if(node.right){ctx2.strokeStyle='#1e2d4a';ctx2.lineWidth=1;ctx2.beginPath();ctx2.moveTo(x,y+14);ctx2.lineTo(x+w/2,y+50);ctx2.stroke(); drawTree(node.right,x+w/2,y+50,w/2);}
+  };
+  drawTree(tree, canvas.width/2, 20, canvas.width/3);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// K-MEANS
+// ═══════════════════════════════════════════════════════════════════════════════
+function generateClusterData() {
+  state.clusterPoints = [];
+  const centers = [[0.2,0.2],[0.8,0.8],[0.5,0.1],[0.1,0.7],[0.9,0.3]];
+  for (let i=0; i<120; i++) {
+    const c = centers[i%centers.length];
+    state.clusterPoints.push([c[0]+randn()*0.12, c[1]+randn()*0.12]);
+  }
+}
+
+function randn() { let u=0,v=0; while(!u)u=Math.random(); while(!v)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+function kmeansIteration(pts, centroids) {
+  const k = centroids.length;
+  const assignments = pts.map(p => {
+    let best=0, bestD=Infinity;
+    centroids.forEach((c,i)=>{ const d=math.euclidean(p,c); if(d<bestD){bestD=d;best=i;} });
+    return best;
+  });
+  const newCentroids = centroids.map((_,i) => {
+    const cluster = pts.filter((_,j)=>assignments[j]===i);
+    if(!cluster.length) return centroids[i];
+    return [math.mean(cluster.map(p=>p[0])), math.mean(cluster.map(p=>p[1]))];
+  });
+  return { assignments, centroids: newCentroids };
+}
+
+async function runKMeans(animate=false) {
+  const k = parseInt(document.getElementById('km-k').value);
+  const maxIter = parseInt(document.getElementById('km-iters').value);
+  const pts = state.clusterPoints;
+  if (!pts.length) { generateClusterData(); return runKMeans(animate); }
+
+  // K-means++ init
+  let centroids = [pts[Math.floor(Math.random()*pts.length)]];
+  while (centroids.length < k) {
+    const dists = pts.map(p => Math.min(...centroids.map(c=>math.euclidean(p,c)**2)));
+    const total = dists.reduce((a,b)=>a+b,0);
+    let r = Math.random()*total, cumul = 0;
+    for (let i=0; i<pts.length; i++) { cumul+=dists[i]; if(cumul>=r){centroids.push(pts[i]);break;} }
+  }
+
+  let assignments, iters=0, converged=false;
+  const log = document.getElementById('km-iter-log');
+  log.innerHTML = '';
+
+  for (let it=0; it<maxIter && !converged; it++) {
+    const prev = JSON.stringify(centroids);
+    const result = kmeansIteration(pts, centroids);
+    assignments = result.assignments;
+    centroids = result.centroids;
+    converged = JSON.stringify(centroids) === prev;
+    iters++;
+    log.innerHTML += `Iter ${iters}: inertia=${pts.reduce((s,p,i)=>s+math.euclidean(p,centroids[assignments[i]])**2,0).toFixed(3)}<br>`;
+    log.scrollTop = log.scrollHeight;
+    if (animate) {
+      drawKMeansChart(pts, assignments, centroids, k);
+      await new Promise(r => setTimeout(r, 180));
+    }
+  }
+
+  const inertia = pts.reduce((s,p,i)=>s+math.euclidean(p,centroids[assignments[i]])**2,0);
+  const sil = simpleSilhouette(pts, assignments, k);
+  updateMetrics('km-metrics', [inertia.toFixed(1), sil.toFixed(3), iters, converged?'✓':'✗']);
+  drawKMeansChart(pts, assignments, centroids, k);
+}
+
+function simpleSilhouette(pts, assignments, k) {
+  if (k < 2) return 0;
+  const s = pts.map((p, i) => {
+    const same = pts.filter((_,j)=>j!==i&&assignments[j]===assignments[i]);
+    const a = same.length ? math.mean(same.map(q=>math.euclidean(p,q))) : 0;
+    let b = Infinity;
+    for (let c=0; c<k; c++) {
+      if (c===assignments[i]) continue;
+      const cluster = pts.filter((_,j)=>assignments[j]===c);
+      if (cluster.length) b = Math.min(b, math.mean(cluster.map(q=>math.euclidean(p,q))));
+    }
+    if (b===Infinity) return 0;
+    return (b-a)/Math.max(a,b);
+  });
+  return math.mean(s);
+}
+
+function drawKMeansChart(pts, assignments, centroids, k) {
+  destroyChart('km-chart');
+  const ctx = document.getElementById('km-chart').getContext('2d');
+  const datasets = Array.from({length:k},(_,i) => ({
+    label:`Cluster ${i+1}`,
+    data: pts.filter((_,j)=>assignments[j]===i).map(p=>({x:p[0],y:p[1]})),
+    backgroundColor: CLUSTER_COLORS[i]+'80', pointRadius:5
+  }));
+  datasets.push({ label:'Centroids', data:centroids.map(c=>({x:c[0],y:c[1]})), backgroundColor:'#fff', pointRadius:10, pointStyle:'star', type:'scatter' });
+  state.charts['km-chart'] = new Chart(ctx, {
+    type:'scatter', data:{datasets},
+    options:{...getChartDefaults(),scales:{x:{min:0,max:1,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e2d4a'}},y:{min:0,max:1,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e2d4a'}}}}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HIERARCHICAL CLUSTERING
+// ═══════════════════════════════════════════════════════════════════════════════
+function generateClusterData2() {
+  state.hcPoints = [];
+  const centers = [[0.25,0.25],[0.75,0.75],[0.5,0.15],[0.15,0.75]];
+  for (let i=0;i<40;i++) {
+    const c = centers[i%4];
+    state.hcPoints.push([c[0]+randn()*0.1, c[1]+randn()*0.1]);
+  }
+}
+
+function runHierarchical() {
+  if (!state.hcPoints) generateClusterData2();
+  const pts = state.hcPoints;
+  const k = parseInt(document.getElementById('hc-k').value);
+  const linkage = document.getElementById('hc-linkage').value;
+  const metric = document.getElementById('hc-metric').value;
+
+  const dist = metric==='Euclidean' ? math.euclidean : math.manhattan;
+  let clusters = pts.map((p,i)=>({pts:[p],id:i}));
+  const merges = [];
+
+  while (clusters.length > k) {
+    let bestD=Infinity, bestI=0, bestJ=1;
+    for (let i=0;i<clusters.length;i++) {
+      for (let j=i+1;j<clusters.length;j++) {
+        const dists=[];
+        clusters[i].pts.forEach(p=>clusters[j].pts.forEach(q=>dists.push(dist(p,q))));
+        const d = linkage==='Single'?Math.min(...dists):linkage==='Complete'?Math.max(...dists):math.mean(dists);
+        if(d<bestD){bestD=d;bestI=i;bestJ=j;}
+      }
+    }
+    merges.push({d:bestD,size:clusters[bestI].pts.length+clusters[bestJ].pts.length});
+    clusters[bestI].pts = [...clusters[bestI].pts,...clusters[bestJ].pts];
+    clusters.splice(bestJ,1);
+  }
+
+  const assignments = pts.map(p=>{
+    let best=0;
+    clusters.forEach((cl,i)=>{ if(cl.pts.some(q=>q[0]===p[0]&&q[1]===p[1])) best=i; });
+    return best;
+  });
+
+  const sil = simpleSilhouette(pts, assignments, k);
+  updateMetrics('hc-metrics', [clusters.length, sil.toFixed(3), pts.length, merges.length]);
+
+  // Scatter
+  destroyChart('hc-scatter-chart');
+  const ctx1 = document.getElementById('hc-scatter-chart').getContext('2d');
+  const dsets = clusters.map((cl,i)=>({
+    label:`Cluster ${i+1}`, data:cl.pts.map(p=>({x:p[0],y:p[1]})),
+    backgroundColor:CLUSTER_COLORS[i]+'80', pointRadius:6
+  }));
+  state.charts['hc-scatter-chart'] = new Chart(ctx1, {
+    type:'scatter', data:{datasets:dsets},
+    options:{...getChartDefaults(),scales:{x:{min:0,max:1,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e2d4a'}},y:{min:0,max:1,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e2d4a'}}}}
+  });
+
+  // Dendrogram
+  destroyChart('hc-dendro-chart');
+  const ctx2 = document.getElementById('hc-dendro-chart').getContext('2d');
+  state.charts['hc-dendro-chart'] = new Chart(ctx2, {
+    type:'bar',
+    data:{labels:merges.map((_,i)=>'M'+(i+1)),datasets:[{label:'Merge Distance',data:merges.map(m=>m.d.toFixed(4)),backgroundColor:'rgba(124,58,237,0.6)',borderColor:'#7c3aed',borderWidth:2}]},
+    options:{...getChartDefaults()}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DBSCAN
+// ═══════════════════════════════════════════════════════════════════════════════
+function generateNoiseData() {
+  state.clusterPoints = [];
+  // Circular clusters with noise
+  for (let i=0;i<30;i++) {
+    const a=Math.random()*2*Math.PI;
+    const r=0.1+Math.random()*0.08;
+    state.clusterPoints.push([0.3+Math.cos(a)*r, 0.3+Math.sin(a)*r]);
+  }
+  for (let i=0;i<30;i++) {
+    const a=Math.random()*2*Math.PI;
+    const r=0.1+Math.random()*0.08;
+    state.clusterPoints.push([0.7+Math.cos(a)*r, 0.7+Math.sin(a)*r]);
+  }
+  for (let i=0;i<15;i++) state.clusterPoints.push([Math.random(),Math.random()]); // noise
+}
+
+function runDBSCAN() {
+  if (!state.clusterPoints.length) generateNoiseData();
+  const pts = state.clusterPoints;
+  const eps = parseInt(document.getElementById('db-eps').value)/100;
+  const minPts = parseInt(document.getElementById('db-min').value);
+
+  const labels = new Array(pts.length).fill(-2); // -2 = unvisited
+  let cluster = 0;
+
+  const neighbors = i => pts.map((_,j)=>j).filter(j=>j!==i && math.euclidean(pts[i],pts[j])<=eps);
+
+  for (let i=0;i<pts.length;i++) {
+    if (labels[i]!=-2) continue;
+    const N = neighbors(i);
+    if (N.length < minPts) { labels[i]=-1; continue; } // noise
+    labels[i] = cluster;
+    const seed = new Set(N);
+    seed.forEach(j => {
+      if (labels[j]===-1) labels[j]=cluster;
+      if (labels[j]!==-2) return;
+      labels[j]=cluster;
+      const N2=neighbors(j);
+      if(N2.length>=minPts) N2.forEach(q=>seed.add(q));
+    });
+    cluster++;
+  }
+
+  const nClusters = new Set(labels.filter(l=>l>=0)).size;
+  const noise = labels.filter(l=>l===-1).length;
+  const core = pts.filter((_,i)=>neighbors(i).length>=minPts).length;
+  updateMetrics('db-metrics', [nClusters, noise, core, pts.length-core-noise]);
+
+  destroyChart('db-chart');
+  const ctx = document.getElementById('db-chart').getContext('2d');
+  const clIds = [...new Set(labels.filter(l=>l>=0))];
+  const dsets = [
+    ...clIds.map(c=>({
+      label:`Cluster ${c+1}`,
+      data:pts.filter((_,i)=>labels[i]===c).map(p=>({x:p[0],y:p[1]})),
+      backgroundColor:CLUSTER_COLORS[c]+'90', pointRadius:6
+    })),
+    { label:'Noise', data:pts.filter((_,i)=>labels[i]===-1).map(p=>({x:p[0],y:p[1]})), backgroundColor:'#ffffff40', pointRadius:4, pointStyle:'cross' }
+  ];
+  state.charts['db-chart'] = new Chart(ctx, {
+    type:'scatter', data:{datasets:dsets},
+    options:{...getChartDefaults(),scales:{x:{min:0,max:1,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e2d4a'}},y:{min:0,max:1,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e2d4a'}}}}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PCA
+// ═══════════════════════════════════════════════════════════════════════════════
+function runPCA() {
+  if (!state.trainX.length) return alert('Please load and configure a dataset first');
+  const k = parseInt(document.getElementById('pca-k').value);
+  const X = state.trainX;
+  const n=X.length, d=X[0].length;
+
+  // Center
+  const means = X[0].map((_,j)=>math.mean(X.map(r=>r[j])));
+  const Xc = X.map(r=>r.map((v,j)=>v-means[j]));
+
+  // Covariance matrix
+  const cov = Array.from({length:d},(_,i)=>Array.from({length:d},(_,j)=>
+    Xc.reduce((s,r)=>s+r[i]*r[j],0)/(n-1)
+  ));
+
+  // Power iteration for top eigenvectors
+  const eigenvecs = [];
+  let Xcc = Xc.map(r=>[...r]);
+  for (let e=0; e<Math.min(k,d); e++) {
+    let v = Array.from({length:d},()=>Math.random()-0.5);
+    const norm = x=>{ const n=Math.sqrt(x.reduce((s,v)=>s+v*v,0)); return x.map(v=>v/n); };
+    v = norm(v);
+    for (let i=0;i<100;i++) {
+      const mv = cov.map(row=>math.dot(row,v));
+      v = norm(mv);
+    }
+    eigenvecs.push(v);
+    // deflate
+    Xcc = Xcc.map(r=>{
+      const proj = math.dot(r,v);
+      return r.map((rv,j)=>rv-proj*v[j]);
+    });
+  }
+
+  // Variance explained
+  const variances = eigenvecs.map(ev=>{
+    const projected = X.map(r=>math.dot(r.map((v,j)=>v-means[j]),ev));
+    const m=math.mean(projected);
+    return projected.reduce((s,v)=>s+(v-m)**2,0)/(n-1);
+  });
+  const totalVar = cov.reduce((s,_,i)=>s+cov[i][i],0)||1;
+  const ratios = variances.map(v=>v/totalVar);
+
+  updateMetrics('pca-metrics', [
+    (ratios[0]*100||0).toFixed(1)+'%',
+    (ratios[1]*100||0).toFixed(1)+'%',
+    ((ratios.reduce((a,b)=>a+b,0))*100).toFixed(1)+'%',
+    d
+  ]);
+
+  // Project to 2D
+  const proj2D = X.map(r=>[
+    math.dot(r.map((v,j)=>v-means[j]),eigenvecs[0]),
+    eigenvecs[1]?math.dot(r.map((v,j)=>v-means[j]),eigenvecs[1]):0
+  ]);
+
+  destroyChart('pca-scatter-chart');
+  const ctx1 = document.getElementById('pca-scatter-chart').getContext('2d');
+  const classes = [...new Set(state.trainY)];
+  state.charts['pca-scatter-chart'] = new Chart(ctx1, {
+    type:'scatter',
+    data:{datasets:classes.map(c=>({
+      label:'Class '+c,
+      data:proj2D.filter((_,i)=>state.trainY[i]===c).map(p=>({x:p[0],y:p[1]})),
+      backgroundColor:CLUSTER_COLORS[c]+'90', pointRadius:5
+    }))},
+    options:{...getChartDefaults()}
+  });
+
+  destroyChart('pca-var-chart');
+  const ctx2 = document.getElementById('pca-var-chart').getContext('2d');
+  const cumRatios = ratios.map((_,i)=>ratios.slice(0,i+1).reduce((a,b)=>a+b,0));
+  state.charts['pca-var-chart'] = new Chart(ctx2, {
+    type:'bar',
+    data:{labels:ratios.map((_,i)=>`PC${i+1}`),datasets:[
+      {label:'Explained Variance',data:ratios.map(v=>(v*100).toFixed(1)),backgroundColor:'rgba(0,212,255,0.5)',borderColor:'#00d4ff',borderWidth:2},
+      {label:'Cumulative',data:cumRatios.map(v=>(v*100).toFixed(1)),type:'line',borderColor:'#f59e0b',backgroundColor:'transparent',tension:0.4,pointRadius:4}
+    ]},
+    options:{...getChartDefaults()}
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FEEDFORWARD NEURAL NETWORK
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildFNN() {
+  if (!state.trainX.length) return alert('Please load and configure a dataset first');
+  const layerSizes = document.getElementById('fnn-layers').value.split(',').map(Number).filter(n=>n>0);
+  const activation = document.getElementById('fnn-activation').value;
+  const lr = parseInt(document.getElementById('fnn-lr').value)/1000;
+  const epochs = parseInt(document.getElementById('fnn-epochs').value);
+
+  const inSize = state.trainX[0].length;
+  const outSize = (state.classes||[...new Set(state.trainY)]).length;
+  const sizes = [inSize, ...layerSizes, outSize];
+  const actFn = activation==='ReLU'?math.relu:activation==='Sigmoid'?math.sigmoid:math.tanh;
+  const actGrad = activation==='ReLU'?(z=>z>0?1:0):(z=>actFn(z)*(1-actFn(z)));
+
+  // Init weights
+  let weights = [], biases = [];
+  for (let l=0; l<sizes.length-1; l++) {
+    const scale = Math.sqrt(2/sizes[l]);
+    weights.push(Array.from({length:sizes[l+1]},()=>Array.from({length:sizes[l]},()=>(Math.random()*2-1)*scale)));
+    biases.push(new Array(sizes[l+1]).fill(0));
+  }
+
+  const forward = x => {
+    let a=x, zs=[], acts=[x];
+    for (let l=0; l<weights.length-1; l++) {
+      const z = weights[l].map(row=>math.dot(row,a)+biases[l][row.indexOf?0:0]).map((v,i)=>weights[l][i].reduce((s,w,j)=>s+w*a[j],0)+biases[l][i]);
+      zs.push(z); a=z.map(actFn); acts.push(a);
+    }
+    const zOut = weights[weights.length-1].map((row,i)=>row.reduce((s,w,j)=>s+w*a[j],0)+biases[biases.length-1][i]);
+    const aOut = math.softmax(zOut);
+    zs.push(zOut); acts.push(aOut);
+    return {zs,acts};
+  };
+
+  const totalParams = sizes.reduce((s,n,i)=>i===0?s:s+n*(sizes[i-1]+1),0);
+  const losses=[], valLosses=[];
+
+  for (let e=0; e<epochs; e++) {
+    let totalLoss=0;
+    const idx = state.trainX.map((_,i)=>i).sort(()=>Math.random()-0.5);
+    idx.forEach(i=>{
+      const {zs,acts} = forward(state.trainX[i]);
+      const y=state.trainY[i];
+      const yOH = new Array(outSize).fill(0); yOH[y%outSize]=1;
+      totalLoss += -yOH.reduce((s,v,j)=>s+v*Math.log(acts[acts.length-1][j]+1e-10),0);
+
+      // Backprop
+      let delta = acts[acts.length-1].map((a,j)=>a-yOH[j]);
+      for (let l=weights.length-1; l>=0; l--) {
+        const dW = weights[l].map((row,i)=>row.map((w,j)=>delta[i]*acts[l][j]));
+        const dB = delta;
+        if (l>0) {
+          const newDelta = acts[l].map((_,j)=>delta.reduce((s,d,i)=>s+d*weights[l][i][j],0)*actGrad(zs[l-1][j]));
+          delta=newDelta;
+        }
+        weights[l]=weights[l].map((row,i)=>row.map((w,j)=>w-lr*dW[i][j]));
+        biases[l]=biases[l].map((b,i)=>b-lr*dB[i]);
+      }
+    });
+    losses.push(totalLoss/state.trainX.length);
+
+    // Val loss
+    let valLoss=0;
+    state.testX.forEach((xi,i)=>{
+      const {acts}=forward(xi); const y=state.testY[i]; const yOH=new Array(outSize).fill(0);yOH[y%outSize]=1;
+      valLoss+=-yOH.reduce((s,v,j)=>s+v*Math.log(acts[acts.length-1][j]+1e-10),0);
+    });
+    valLosses.push(valLoss/state.testX.length);
+  }
+
+  state.fnnModel = { weights, biases, sizes, actFn, forward };
+
+  const preds = state.testX.map(xi=>{ const {acts}=forward(xi); const out=acts[acts.length-1]; return out.indexOf(Math.max(...out)); });
+  const acc = accuracy(state.testY.map(v=>v%outSize), preds);
+
+  updateMetrics('fnn-metrics', [losses[losses.length-1].toFixed(3), valLosses[valLosses.length-1].toFixed(3), (acc*100).toFixed(1)+'%', totalParams]);
+
+  destroyChart('fnn-loss-chart');
+  const ctx = document.getElementById('fnn-loss-chart').getContext('2d');
+  state.charts['fnn-loss-chart'] = new Chart(ctx, {
+    type:'line',
+    data:{labels:losses.map((_,i)=>i+1),datasets:[
+      {label:'Train Loss',data:losses,borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,0.1)',tension:0.4,pointRadius:0,borderWidth:2},
+      {label:'Val Loss',data:valLosses,borderColor:'#7c3aed',backgroundColor:'rgba(124,58,237,0.1)',tension:0.4,pointRadius:0,borderWidth:2}
+    ]},
+    options:{...getChartDefaults()}
+  });
+
+  renderFNNViz(sizes);
+}
+
+function renderFNNViz(sizes) {
+  const container = document.getElementById('fnn-viz');
+  const maxNeurons = 8;
+  const W = container.clientWidth || 600;
+  const H = 220;
+  let html = `<svg width="${W}" height="${H}" id="fnn-svg-el">`;
+
+  const layerX = sizes.map((_, i) => (i + 1) * W / (sizes.length + 1));
+  const neuronPositions = sizes.map((n, l) => {
+    const display = Math.min(n, maxNeurons);
+    const spacing = H / (display + 1);
+    return Array.from({length:display},(_,i)=>({x:layerX[l],y:spacing*(i+1)}));
+  });
+
+  // Connections
+  for (let l=0; l<neuronPositions.length-1; l++) {
+    neuronPositions[l].forEach(a => {
+      neuronPositions[l+1].forEach(b => {
+        html += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1e2d4a" stroke-width="0.8" opacity="0.6"/>`;
+      });
+    });
+  }
+
+  // Neurons
+  neuronPositions.forEach((layer, l) => {
+    const col = l===0?'#00d4ff':l===neuronPositions.length-1?'#10b981':'#7c3aed';
+    layer.forEach((n, i) => {
+      html += `<circle cx="${n.x}" cy="${n.y}" r="12" fill="${col}22" stroke="${col}" stroke-width="1.5"/>`;
+      html += `<text x="${n.x}" y="${n.y+4}" text-anchor="middle" fill="${col}" font-size="8" font-family="JetBrains Mono">${l===0?'x'+(i+1):l===neuronPositions.length-1?'y'+(i+1):'h'}</text>`;
+    });
+    const label = l===0?'Input':l===neuronPositions.length-1?'Output':'Hidden';
+    html += `<text x="${layerX[l]}" y="${H-5}" text-anchor="middle" fill="#64748b" font-size="9" font-family="JetBrains Mono">${label} (${sizes[l]})</text>`;
+  });
+
+  html += '</svg>';
+  container.innerHTML = html;
+}
+
+let fnnAnimFrame = 0;
+async function animateFNN() {
+  if (!state.fnnModel) return alert('Build a model first');
+  const sizes = state.fnnModel.sizes;
+  const container = document.getElementById('fnn-viz');
+  const W = container.clientWidth || 600;
+  const H = 220;
+  const maxN = 8;
+  const layerX = sizes.map((_,i)=>(i+1)*W/(sizes.length+1));
+  const neuronPos = sizes.map((n,l)=>{
+    const d=Math.min(n,maxN), sp=H/(d+1);
+    return Array.from({length:d},(_,i)=>({x:layerX[l],y:sp*(i+1)}));
+  });
+
+  for (let l=0; l<sizes.length; l++) {
+    let svg = `<svg width="${W}" height="${H}">`;
+    for (let ll=0; ll<neuronPos.length-1; ll++) {
+      neuronPos[ll].forEach(a=>neuronPos[ll+1].forEach(b=>{
+        const active = ll < l;
+        svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${active?'#00d4ff':'#1e2d4a'}" stroke-width="${active?1.5:0.8}" opacity="${active?0.8:0.4}"/>`;
+      }));
+    }
+    neuronPos.forEach((layer, ll)=>{
+      const col = ll<l?'#00d4ff':ll===l?'#f59e0b':'#7c3aed';
+      const glow = ll===l?`filter="url(#glow)"`:ll<l?'opacity="0.9"':'opacity="0.4"';
+      layer.forEach(n=>{
+        svg += `<circle cx="${n.x}" cy="${n.y}" r="${ll===l?15:12}" fill="${col}33" stroke="${col}" stroke-width="2" ${glow}/>`;
+      });
+    });
+    svg += '</svg>';
+    container.innerHTML = svg;
+    await new Promise(r=>setTimeout(r,400));
+  }
+  await new Promise(r=>setTimeout(r,300));
+  renderFNNViz(sizes);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CNN
+// ═══════════════════════════════════════════════════════════════════════════════
+const CNN_KERNELS = {
+  edge: [[-1,-1,-1],[-1,8,-1],[-1,-1,-1]],
+  blur: [[1,2,1],[2,4,2],[1,2,1]].map(r=>r.map(v=>v/16)),
+  sharpen: [[0,-1,0],[-1,5,-1],[0,-1,0]],
+  emboss: [[-2,-1,0],[-1,1,1],[0,1,2]]
+};
+
+function initCNNDemo() {
+  // Draw a simple digit-like pattern on input canvas
+  const canvas = document.getElementById('cnn-input-canvas');
+  const ctx = canvas.getContext('2d');
+  const size = 14;
+  const cellW = canvas.width/size;
+  // Create 14x14 simulated digit
+  const pattern = [
+    [0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+    [0,0,1,1,0,0,0,1,1,0,0,0,0,0],
+    [0,1,1,0,0,0,0,1,1,0,0,0,0,0],
+    [0,1,1,0,0,0,0,1,1,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,0,0,0,0,0],
+    [0,1,1,0,0,0,0,1,1,0,0,0,0,0],
+    [0,1,1,0,0,0,0,1,1,0,0,0,0,0],
+    [0,0,1,1,0,0,1,1,0,0,0,0,0,0],
+    [0,0,0,1,1,1,1,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+  ];
+  state.cnnInput = pattern;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  pattern.forEach((row,r)=>row.forEach((v,c)=>{
+    ctx.fillStyle = v ? '#e2e8f0' : '#0d1120';
+    ctx.fillRect(c*cellW, r*cellW, cellW, cellW);
+  }));
+}
+
+function applyConv2D(input, kernel, stride=1) {
+  const ks = kernel.length;
+  const outSize = Math.floor((input.length - ks) / stride) + 1;
+  return Array.from({length:outSize},(_,r)=>
+    Array.from({length:outSize},(_,c)=>{
+      let sum=0;
+      for(let kr=0;kr<ks;kr++) for(let kc=0;kc<ks;kc++)
+        sum+=(input[r*stride+kr]?.[c*stride+kc]||0)*kernel[kr][kc];
+      return sum;
+    })
+  );
+}
+
+function maxPool2D(feature, size=2) {
+  const out = Math.floor(feature.length/size);
+  return Array.from({length:out},(_,r)=>
+    Array.from({length:out},(_,c)=>{
+      let max=-Infinity;
+      for(let i=0;i<size;i++) for(let j=0;j<size;j++)
+        max=Math.max(max,(feature[r*size+i]?.[c*size+j])||0);
+      return max;
+    })
+  );
+}
+
+function drawMatrix(canvas, matrix, colorFn) {
+  const ctx = canvas.getContext('2d');
+  const n = matrix.length, m = matrix[0].length;
+  const cw = canvas.width/m, ch = canvas.height/n;
+  const flat = matrix.flat();
+  const mn=Math.min(...flat), mx=Math.max(...flat)||1;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  matrix.forEach((row,r)=>row.forEach((v,c)=>{
+    const norm=(v-mn)/(mx-mn||1);
+    ctx.fillStyle=colorFn(norm);
+    ctx.fillRect(c*cw,r*ch,cw,ch);
+  }));
+}
+
+function runCNN() {
+  if (!state.cnnInput) initCNNDemo();
+  const filterName = document.getElementById('cnn-filter').value;
+  const stride = parseInt(document.getElementById('cnn-stride').value);
+  const kernel = CNN_KERNELS[filterName];
+  const feature = applyConv2D(state.cnnInput, kernel, stride);
+  const pooled = maxPool2D(feature);
+
+  drawMatrix(document.getElementById('cnn-feature-canvas'), feature,
+    v=>`rgba(${Math.floor(v*0)},${Math.floor(v*212)},${Math.floor(v*255)},${0.3+v*0.7})`);
+  drawMatrix(document.getElementById('cnn-pool-canvas'), pooled,
+    v=>`rgba(${Math.floor(v*16)},${Math.floor(v*185)},${Math.floor(v*129)},${0.3+v*0.7})`);
+}
+
+async function animateCNNConv() {
+  if (!state.cnnInput) initCNNDemo();
+  const canvas = document.getElementById('cnn-anim-canvas');
+  const ctx = canvas.getContext('2d');
+  const inputSize = Math.min(8, state.cnnInput ? state.cnnInput.length : 8), cellSize = 20;
+  const kernel = CNN_KERNELS[document.getElementById('cnn-filter').value];
+  const ks = kernel.length;
+  const outSize = inputSize-ks+1;
+
+  for (let r=0; r<outSize; r++) {
+    for (let c=0; c<outSize; c++) {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // Draw input grid
+      for (let i=0;i<inputSize;i++) for(let j=0;j<inputSize;j++) {
+        const inKernel = i>=r&&i<r+ks&&j>=c&&j<c+ks;
+        ctx.fillStyle = inKernel ? 'rgba(0,212,255,0.2)' : '#0d1120';
+        ctx.fillRect(j*cellSize, i*cellSize, cellSize, cellSize);
+        ctx.strokeStyle = inKernel ? '#00d4ff' : '#1e2d4a';
+        ctx.strokeRect(j*cellSize, i*cellSize, cellSize, cellSize);
+        ctx.fillStyle = '#64748b'; ctx.font='8px JetBrains Mono'; ctx.textAlign='center';
+        ctx.fillText(state.cnnInput[i]?.[j]||0, j*cellSize+cellSize/2, i*cellSize+cellSize/2+3);
+      }
+      // Draw kernel
+      const kx = inputSize*cellSize+40;
+      ctx.fillStyle='#ffffff10'; ctx.fillRect(kx,0,ks*cellSize,ks*cellSize); ctx.strokeStyle='#7c3aed'; ctx.strokeRect(kx,0,ks*cellSize,ks*cellSize);
+      ctx.fillStyle='#a78bfa'; ctx.font='11px JetBrains Mono'; ctx.fillText('Kernel', kx+ks*cellSize/2, ks*cellSize+15);
+      kernel.forEach((row,kr)=>row.forEach((v,kc)=>{
+        ctx.fillStyle=v>0?'rgba(124,58,237,0.4)':v<0?'rgba(239,68,68,0.4)':'#0d1120';
+        ctx.fillRect(kx+kc*cellSize,kr*cellSize,cellSize,cellSize);
+        ctx.strokeStyle='#7c3aed30'; ctx.strokeRect(kx+kc*cellSize,kr*cellSize,cellSize,cellSize);
+        ctx.fillStyle='#e2e8f0'; ctx.font='8px JetBrains Mono'; ctx.textAlign='center';
+        ctx.fillText(v.toFixed(1),kx+kc*cellSize+cellSize/2,kr*cellSize+cellSize/2+3);
+      }));
+      await new Promise(res=>setTimeout(res,80));
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RNN
+// ═══════════════════════════════════════════════════════════════════════════════
+function initRNNViz() {
+  const canvas = document.getElementById('rnn-viz-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#64748b'; ctx.font='11px JetBrains Mono'; ctx.textAlign='center';
+  ctx.fillText('Configure and click "Process Sequence" to visualize', canvas.width/2, canvas.height/2);
+}
+
+async function runRNN() {
+  const seqStr = document.getElementById('rnn-sequence').value;
+  const seq = seqStr.split(',').map(Number).filter(v=>!isNaN(v));
+  if (!seq.length) return alert('Enter a valid sequence');
+  const hidSize = parseInt(document.getElementById('rnn-hidden').value);
+
+  // Simple Vanilla RNN
+  const Wx = Array.from({length:hidSize},()=>Array.from({length:1},()=>(Math.random()*2-1)*0.5));
+  const Wh = Array.from({length:hidSize},()=>Array.from({length:hidSize},()=>(Math.random()*2-1)*0.1));
+  const bh = new Array(hidSize).fill(0);
+  const mn = Math.min(...seq), mx = Math.max(...seq)||1;
+  const normSeq = seq.map(v=>(v-mn)/(mx-mn||1));
+
+  let h = new Array(hidSize).fill(0);
+  const hStates = [h];
+  normSeq.forEach(x=>{
+    const newH = Wh.map((row,i)=>math.tanh(math.dot(row,h) + math.dot(Wx[i],[x]) + bh[i]));
+    h = newH; hStates.push([...h]);
+  });
+
+  state.rnnStates = hStates;
+  drawRNNViz(seq, hStates);
+  drawRNNHiddenChart(hStates);
+}
+
+function drawRNNViz(seq, states) {
+  const canvas = document.getElementById('rnn-viz-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const n = Math.min(seq.length+1, 12);
+  const stepW = W/(n+1);
+  const colors = ['#00d4ff','#7c3aed','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6'];
+
+  for (let t=0; t<n; t++) {
+    const x = stepW*(t+0.5);
+    const isInput = t < seq.length;
+
+    // Arrow from prev hidden
+    if (t>0) {
+      ctx.beginPath(); ctx.moveTo(stepW*(t-0.5)+35,H/2); ctx.lineTo(x-35,H/2);
+      ctx.strokeStyle='#00d4ff'; ctx.lineWidth=2; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x-38,H/2-6); ctx.lineTo(x-32,H/2); ctx.lineTo(x-38,H/2+6);
+      ctx.fillStyle='#00d4ff'; ctx.fill();
+    }
+
+    // Hidden state box
+    ctx.fillStyle='rgba(0,212,255,0.1)'; ctx.strokeStyle='#00d4ff'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect(x-32,H/2-25,64,50,6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#e2e8f0'; ctx.font='10px JetBrains Mono'; ctx.textAlign='center';
+    ctx.fillText(`h${t}`, x, H/2+4);
+
+    // Input arrow
+    if (isInput) {
+      ctx.beginPath(); ctx.moveTo(x,H/2-50); ctx.lineTo(x,H/2-28);
+      ctx.strokeStyle='#f59e0b'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle='rgba(245,158,11,0.15)'; ctx.strokeStyle='#f59e0b';
+      ctx.beginPath(); ctx.roundRect(x-22,H/2-75,44,26,4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='#f59e0b'; ctx.font='9px JetBrains Mono';
+      ctx.fillText('x'+(t+1)+'='+seq[t], x, H/2-58);
+    }
+
+    // Output arrow
+    if (t < n-1) {
+      ctx.beginPath(); ctx.moveTo(x,H/2+28); ctx.lineTo(x,H/2+55);
+      ctx.strokeStyle='#10b981'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.fillStyle='rgba(16,185,129,0.15)'; ctx.strokeStyle='#10b981';
+      ctx.beginPath(); ctx.roundRect(x-22,H/2+55,44,24,4); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='#10b981'; ctx.font='9px JetBrains Mono';
+      ctx.fillText('y'+(t+1), x, H/2+71);
+    }
+  }
+}
+
+function drawRNNHiddenChart(states) {
+  destroyChart('rnn-hidden-chart');
+  const ctx = document.getElementById('rnn-hidden-chart').getContext('2d');
+  const n = Math.min(states[0].length, 4);
+  state.charts['rnn-hidden-chart'] = new Chart(ctx, {
+    type:'line',
+    data:{labels:states.map((_,i)=>`t${i}`),datasets:Array.from({length:n},(_,i)=>({
+      label:`h[${i}]`,data:states.map(s=>s[i]?.toFixed(3)||0),
+      borderColor:CLUSTER_COLORS[i],backgroundColor:'transparent',tension:0.4,pointRadius:3,borderWidth:2
+    }))},
+    options:{...getChartDefaults()}
+  });
+}
+
+async function animateRNN() {
+  const seqStr = document.getElementById('rnn-sequence').value;
+  const seq = seqStr.split(',').map(Number).filter(v=>!isNaN(v));
+  const canvas = document.getElementById('rnn-viz-canvas');
+  const ctx = canvas.getContext('2d');
+  for (let t=0; t<=seq.length; t++) {
+    const partial = seq.slice(0, t);
+    const hidSize = parseInt(document.getElementById('rnn-hidden').value);
+    const Wx = Array.from({length:hidSize},()=>[0.5]);
+    const Wh = Array.from({length:hidSize},()=>new Array(hidSize).fill(0.1));
+    const bh = new Array(hidSize).fill(0);
+    const mn=Math.min(...seq)||0, mx=Math.max(...seq)||1;
+    let h=new Array(hidSize).fill(0);
+    const states=[h];
+    partial.forEach(x=>{ const newH=Wh.map((row,i)=>math.tanh(math.dot(row,h)+(Wx[i][0])*(x-mn)/(mx-mn||1)+bh[i]));h=newH;states.push([...h]); });
+    drawRNNViz(partial, states);
+    await new Promise(r=>setTimeout(r,600));
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRANSFORMER
+// ═══════════════════════════════════════════════════════════════════════════════
+function initTransformerViz() {
+  document.getElementById('attention-heatmap').innerHTML = '<div style="color:var(--text3);font-size:11px;padding:20px;">Click "Compute Attention" to generate heatmap</div>';
+}
+
+function runTransformer() {
+  const text = document.getElementById('transformer-input').value;
+  const tokens = text.toLowerCase().split(/\s+/).filter(t=>t);
+  const dModel = parseInt(document.getElementById('transformer-dmodel').value);
+  const heads = parseInt(document.getElementById('transformer-heads').value);
+  const n = tokens.length;
+
+  // Render tokens
+  document.getElementById('transformer-tokens').innerHTML = tokens.map((t,i)=>
+    `<span class="chip selected" style="margin:3px;background:rgba(${i*30%255},${100},${200},0.2);border-color:rgba(${i*30%255},100,200,0.5);color:#e2e8f0">${t}<sub style="font-size:8px;margin-left:2px">${i}</sub></span>`
+  ).join('');
+
+  // Simulate attention scores (random but normalized)
+  const scores = Array.from({length:n},(_,i)=>
+    Array.from({length:n},(_,j)=>{
+      // Attend more to nearby tokens and self
+      const dist = Math.abs(i-j);
+      return Math.exp(-dist*0.5 + (Math.random()-0.5)*0.8);
+    })
+  );
+  // Row normalize (softmax)
+  const attWeights = scores.map(row=>{
+    const max=Math.max(...row);
+    const exp=row.map(v=>Math.exp(v-max));
+    const sum=exp.reduce((a,b)=>a+b,0);
+    return exp.map(v=>v/sum);
+  });
+
+  // Draw heatmap
+  const cell = Math.min(50, Math.floor(500/n));
+  const container = document.getElementById('attention-heatmap');
+  let html = `<div style="padding:10px;overflow:auto"><div style="display:flex;margin-bottom:4px"><div style="width:${cell}px"></div>`;
+  tokens.forEach(t=>{ html+=`<div style="width:${cell}px;font-size:9px;color:var(--text3);text-align:center;overflow:hidden">${t.slice(0,4)}</div>`; });
+  html+='</div>';
+  attWeights.forEach((row,i)=>{
+    html+=`<div style="display:flex;align-items:center"><div style="width:${cell}px;font-size:9px;color:var(--text3);padding-right:4px;text-align:right;overflow:hidden">${tokens[i].slice(0,4)}</div>`;
+    row.forEach(v=>{
+      const alpha=v;
+      const r=Math.floor(0+alpha*0), g=Math.floor(100+alpha*112), b=Math.floor(200+alpha*55);
+      html+=`<div style="width:${cell}px;height:${cell}px;background:rgba(${r},${g},${b},${0.2+alpha*0.8});border:1px solid #1e2d4a;display:flex;align-items:center;justify-content:center;font-size:8px;color:${alpha>0.5?'#000':'#94a3b8'}">${v.toFixed(2)}</div>`;
+    });
+    html+='</div>';
+  });
+  html+='</div>';
+  container.innerHTML=html;
+
+  // Arch canvas
+  const canvas = document.getElementById('transformer-arch-canvas');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const comps=['Input\nEmbed','Pos\nEncode','Multi-Head\nAttention','Add &\nNorm','Feed\nForward','Add &\nNorm','Output'];
+  const compW=W/comps.length-4;
+  const colors=['#00d4ff','#7c3aed','#f59e0b','#10b981','#ef4444','#10b981','#00d4ff'];
+  comps.forEach((c,i)=>{
+    const x=i*(compW+4)+2;
+    ctx.fillStyle=colors[i]+'22'; ctx.strokeStyle=colors[i]; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.roundRect(x,20,compW,H-30,5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=colors[i]; ctx.font='8px JetBrains Mono'; ctx.textAlign='center';
+    c.split('\n').forEach((line,li)=>ctx.fillText(line,x+compW/2,55+li*12));
+    if(i<comps.length-1){ctx.beginPath();ctx.moveTo(x+compW,H/2);ctx.lineTo(x+compW+4,H/2);ctx.strokeStyle='#64748b';ctx.lineWidth=1;ctx.stroke();}
+  });
+}
+
+async function animateAttention() {
+  const text = document.getElementById('transformer-input').value;
+  const tokens = text.split(/\s+/).filter(t=>t);
+  const container = document.getElementById('attention-heatmap');
+  const n = tokens.length;
+  const cell = Math.min(50, Math.floor(500/n));
+
+  for (let step=0; step<=n*n; step++) {
+    const i = Math.floor(step/n), j = step%n;
+    if (step===0) runTransformer();
+    await new Promise(r=>setTimeout(r,60));
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GNN
+// ═══════════════════════════════════════════════════════════════════════════════
+function buildGNNGraph() {
+  const type = document.getElementById('gnn-type').value;
+  const graphs = {
+    'Social Network': {
+      nodes:[{id:0,label:'Alice',feat:[1,0,1]},{id:1,label:'Bob',feat:[0,1,0]},{id:2,label:'Carol',feat:[1,1,0]},{id:3,label:'Dave',feat:[0,0,1]},{id:4,label:'Eve',feat:[1,0,0]},{id:5,label:'Frank',feat:[0,1,1]}],
+      edges:[[0,1],[0,2],[1,2],[1,3],[2,4],[3,5],[4,5],[0,3]]
+    },
+    'Citation Graph': {
+      nodes:[{id:0,label:'P1',feat:[1,0,0,1]},{id:1,label:'P2',feat:[0,1,0,1]},{id:2,label:'P3',feat:[1,1,0,0]},{id:3,label:'P4',feat:[0,0,1,1]},{id:4,label:'P5',feat:[1,0,1,0]},{id:5,label:'P6',feat:[0,1,1,0]},{id:6,label:'P7',feat:[1,1,1,0]}],
+      edges:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[0,6],[2,4],[1,5]]
+    },
+    'Molecular Graph': {
+      nodes:[{id:0,label:'C',feat:[6,4,0]},{id:1,label:'C',feat:[6,4,0]},{id:2,label:'O',feat:[8,2,1]},{id:3,label:'N',feat:[7,3,1]},{id:4,label:'H',feat:[1,1,0]},{id:5,label:'H',feat:[1,1,0]}],
+      edges:[[0,1],[0,2],[1,3],[0,4],[1,5],[2,3]]
+    }
+  };
+  state.gnnGraph = graphs[type];
+  drawGNNGraph(state.gnnGraph, null);
+}
+
+function drawGNNGraph(graph, highlightNode) {
+  const canvas = document.getElementById('gnn-canvas');
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const n = graph.nodes.length;
+  const positions = graph.nodes.map((_,i)=>{
+    const a = (i/n)*2*Math.PI - Math.PI/2;
+    return { x: W/2 + Math.cos(a)*Math.min(W,H)*0.35, y: H/2 + Math.sin(a)*Math.min(W,H)*0.35 };
+  });
+
+  // Edges
+  graph.edges.forEach(([a,b])=>{
+    ctx.beginPath(); ctx.moveTo(positions[a].x,positions[a].y); ctx.lineTo(positions[b].x,positions[b].y);
+    ctx.strokeStyle='#1e2d4a'; ctx.lineWidth=2; ctx.stroke();
+  });
+
+  // Nodes
+  graph.nodes.forEach((node,i)=>{
+    const pos = positions[i];
+    const isHl = highlightNode===i;
+    ctx.beginPath(); ctx.arc(pos.x,pos.y,22,0,Math.PI*2);
+    ctx.fillStyle=isHl?'rgba(245,158,11,0.4)':'rgba(0,212,255,0.15)';
+    ctx.fill();
+    ctx.strokeStyle=isHl?'#f59e0b':'#00d4ff';
+    ctx.lineWidth=isHl?3:2; ctx.stroke();
+    if(isHl){ctx.shadowBlur=15;ctx.shadowColor='#f59e0b';}
+    ctx.fillStyle='#e2e8f0'; ctx.font='bold 11px JetBrains Mono'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(node.label, pos.x, pos.y);
+    ctx.shadowBlur=0;
+  });
+}
+
+async function runGNN() {
+  if (!state.gnnGraph) buildGNNGraph();
+  const graph = state.gnnGraph;
+  const layers = parseInt(document.getElementById('gnn-layers').value);
+  const aggr = document.getElementById('gnn-aggr').value;
+
+  let embeddings = graph.nodes.map(n=>[...n.feat]);
+
+  for (let l=0; l<layers; l++) {
+    const newEmb = graph.nodes.map((node,i)=>{
+      const neighbors = graph.edges.filter(([a,b])=>a===i||b===i).map(([a,b])=>a===i?b:a);
+      if(!neighbors.length) return embeddings[i];
+      const neighborEmbs = neighbors.map(j=>embeddings[j]);
+      const agg = aggr==='Sum'? embeddings[i].map((_,d)=>neighborEmbs.reduce((s,e)=>s+e[d],0)):
+                  aggr==='Max'? embeddings[i].map((_,d)=>Math.max(...neighborEmbs.map(e=>e[d]))):
+                  embeddings[i].map((_,d)=>math.mean(neighborEmbs.map(e=>e[d])));
+      return agg.map((v,d)=>math.relu(v+embeddings[i][d]*0.5));
+    });
+    embeddings = newEmb;
+  }
+
+  state.gnnEmbeddings = embeddings;
+  const embHtml = embeddings.map((emb,i)=>
+    `<div style="margin-bottom:6px"><span style="color:var(--accent)">${graph.nodes[i].label}:</span> [${emb.map(v=>v.toFixed(2)).join(', ')}]</div>`
+  ).join('');
+  document.getElementById('gnn-embeddings').innerHTML = embHtml;
+}
+
+async function animateGNN() {
+  if (!state.gnnGraph) buildGNNGraph();
+  const graph = state.gnnGraph;
+  for (let i=0; i<graph.nodes.length; i++) {
+    drawGNNGraph(graph, i);
+    const edgeCont = graph.edges.filter(([a,b])=>a===i||b===i);
+    await new Promise(r=>setTimeout(r,500));
+  }
+  drawGNNGraph(graph, null);
+  await runGNN();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RAG PIPELINE
+// ═══════════════════════════════════════════════════════════════════════════════
+function setRAGStep(active) {
+  document.querySelectorAll('.rag-step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if (i < active) s.classList.add('done');
+    if (i === active) s.classList.add('active');
+  });
+}
+
+function simpleEmbed(text) {
+  // Simulated embedding: use character frequencies as a simple hash
+  const vec = new Array(8).fill(0);
+  for (let i=0; i<text.length; i++) vec[i%8] += text.charCodeAt(i)/1000;
+  const mag = Math.sqrt(vec.reduce((s,v)=>s+v*v,0))||1;
+  return vec.map(v=>v/mag);
+}
+
+function cosineSim(a, b) {
+  return a.reduce((s,v,i)=>s+v*b[i],0);
+}
+
+async function ragAddDoc() {
+  const text = document.getElementById('rag-doc-input').value.trim();
+  if (!text) return alert('Enter document text');
+  const chunkSize = parseInt(document.getElementById('rag-chunk-size').value);
+
+  setRAGStep(1);
+  await new Promise(r=>setTimeout(r,400));
+
+  const words = text.split(/\s+/);
+  const chunks = [];
+  for (let i=0; i<words.length; i+=chunkSize) {
+    chunks.push(words.slice(i,i+chunkSize).join(' '));
+  }
+
+  setRAGStep(2);
+  await new Promise(r=>setTimeout(r,400));
+
+  const embedded = chunks.map(c=>({ text:c, embedding: simpleEmbed(c) }));
+
+  setRAGStep(3);
+  await new Promise(r=>setTimeout(r,400));
+
+  state.ragDocs.push(...embedded);
+  setRAGStep(0);
+
+  // Visualize chunks
+  document.getElementById('rag-chunks-card').style.display = 'block';
+  document.getElementById('rag-chunks-viz').innerHTML = embedded.map((c,i)=>`
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:10px;color:var(--accent)">Chunk ${state.ragDocs.length-embedded.length+i+1}</span>
+        <span style="font-size:9px;color:var(--text3)">[${c.embedding.map(v=>v.toFixed(2)).join(', ')}]</span>
+      </div>
+      <div style="font-size:11px;color:var(--text2)">${c.text}</div>
+    </div>
+  `).join('');
+
+  alert(`✅ Indexed ${chunks.length} chunks! Total corpus: ${state.ragDocs.length} chunks`);
+}
+
+async function runRAG() {
+  if (!state.ragDocs.length) return alert('Please index some documents first');
+  const query = document.getElementById('rag-query').value.trim();
+  if (!query) return alert('Enter a query');
+  const topK = parseInt(document.getElementById('rag-topk').value);
+
+  setRAGStep(4);
+  await new Promise(r=>setTimeout(r,400));
+
+  const qEmbed = simpleEmbed(query);
+  const scored = state.ragDocs.map(d=>({ ...d, score: cosineSim(qEmbed, d.embedding) }));
+  scored.sort((a,b)=>b.score-a.score);
+  const top = scored.slice(0, topK);
+
+  setRAGStep(5);
+  await new Promise(r=>setTimeout(r,400));
+
+  document.getElementById('rag-results-card').style.display = 'block';
+  document.getElementById('rag-results-viz').innerHTML = `
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Query: <span style="color:var(--accent)">"${query}"</span></div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;">Query embedding: [${qEmbed.map(v=>v.toFixed(3)).join(', ')}]</div>
+    ${top.map((c,i)=>`
+      <div style="background:var(--bg3);border:1px solid ${i===0?'var(--accent)':'var(--border)'};border-radius:6px;padding:10px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:10px;color:var(--accent3)">Rank ${i+1}</span>
+          <span style="font-size:10px;color:var(--accent)">Similarity: ${c.score.toFixed(4)}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text2)">${c.text}</div>
+        <div class="progress" style="margin-top:6px"><div class="progress-bar" style="width:${Math.max(5,c.score*100)}%"></div></div>
+      </div>
+    `).join('')}`;
+
+  setRAGStep(6);
+  await new Promise(r=>setTimeout(r,400));
+
+  const context = top.map(c=>c.text).join(' ');
+  document.getElementById('rag-answer-card').style.display = 'block';
+  document.getElementById('rag-answer-viz').innerHTML = `
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px">AUGMENTED PROMPT:</div>
+      <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:10px;font-size:11px;color:var(--text2);line-height:1.8;">
+        <span style="color:var(--accent4)">[CONTEXT]</span> ${context}<br><br>
+        <span style="color:var(--accent4)">[QUERY]</span> ${query}<br><br>
+        <span style="color:var(--accent4)">[INSTRUCTION]</span> Answer the query using the provided context.
+      </div>
+    </div>
+    <div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px">SIMULATED ANSWER:</div>
+      <div style="background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(124,58,237,0.08));border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:12px;font-size:11px;color:var(--text);line-height:1.8;">
+        Based on the retrieved documents: <em style="color:var(--text2)">${top[0]?.text.slice(0,150)||'No relevant context found'}...</em>
+        <br><br>
+        <span style="color:var(--text3);font-size:10px">ℹ️ This is a simulated response. In production, the augmented prompt would be sent to an LLM (e.g., Claude, GPT-4) which would generate a grounded answer using the retrieved context.</span>
+      </div>
+    </div>`;
+  setRAGStep(0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALGORITHM COMPARISON
+// ═══════════════════════════════════════════════════════════════════════════════
+async function runAllAlgos() {
+  if (!state.trainX.length) return alert('Please load and configure a dataset first');
+  const results = {};
+  const algos = [
+    { name:'Logistic Regression', fn: () => {
+      const X=state.trainX, y=state.trainY.map(v=>v>0?1:0);
+      let w=new Array(X[0].length).fill(0), b=0;
+      for(let e=0;e<200;e++){const p=X.map(xi=>math.sigmoid(math.dot(xi,w)+b));const err=p.map((pi,i)=>pi-y[i]);w=w.map((wj,j)=>wj-0.01*err.reduce((s,e,i)=>s+e*X[i][j],0)/X.length);b-=0.01*err.reduce((a,b)=>a+b,0)/X.length;}
+      const preds=state.testX.map(xi=>math.sigmoid(math.dot(xi,w)+b)>=0.5?1:0);
+      return accuracy(state.testY.map(v=>v>0?1:0), preds);
+    }},
+    { name:'Naive Bayes', fn: () => {
+      const X=state.trainX, y=state.trainY, classes=[...new Set(y)];
+      const means={},vars={},priors={};
+      classes.forEach(c=>{const idx=y.map((v,i)=>v===c?i:-1).filter(i=>i>=0);priors[c]=idx.length/y.length;means[c]=X[0].map((_,j)=>math.mean(idx.map(i=>X[i][j])));vars[c]=X[0].map((_,j)=>{const vals=idx.map(i=>X[i][j]);const m=math.mean(vals);return Math.max(1e-6,vals.reduce((s,v)=>s+(v-m)**2,0)/vals.length);});});
+      const predict=xi=>{const lp=classes.map(c=>{let lp=Math.log(priors[c]);xi.forEach((x,j)=>{const m=means[c][j],v=vars[c][j];lp+=-0.5*Math.log(2*Math.PI*v)-(x-m)**2/(2*v);});return lp;});return classes[lp.indexOf(Math.max(...lp))];};
+      return accuracy(state.testY, state.testX.map(predict));
+    }},
+    { name:'Decision Tree', fn: () => {
+      const tree=buildTree(state.trainX, state.trainY, 0, 5, 2, 'Gini');
+      return accuracy(state.testY, state.testX.map(xi=>predictTree(tree,xi)));
+    }},
+    { name:'SVM', fn: () => {
+      const X=state.trainX, y=state.trainY.map(v=>v>0?1:-1);
+      let w=new Array(X[0].length).fill(0), b=0, lr=0.01;
+      for(let e=0;e<150;e++){const idx=X.map((_,i)=>i).sort(()=>Math.random()-0.5);idx.forEach(i=>{const margin=y[i]*(math.dot(X[i],w)+b);if(margin<1){w=w.map((wj,j)=>wj*(1-lr/10)+lr*y[i]*X[i][j]);b+=lr*y[i];}else{w=w.map(wj=>wj*(1-lr/10));}});lr*=0.995;}
+      return accuracy(state.testY.map(v=>v>0?1:0), state.testX.map(xi=>math.dot(xi,w)+b>=0?1:0));
+    }}
+  ];
+
+  const container = document.getElementById('compare-results');
+  container.innerHTML = '<div style="color:var(--accent);font-size:11px;padding:10px;" class="processing">Running algorithms...</div>';
+
+  for (const algo of algos) {
+    try { results[algo.name] = algo.fn(); }
+    catch(e) { results[algo.name] = 0; }
+    await new Promise(r=>setTimeout(r,50));
+  }
+
+  state.algoResults = results;
+  const sorted = Object.entries(results).sort((a,b)=>b[1]-a[1]);
+
+  container.innerHTML = `<div class="card">
+    <div class="card-title">Accuracy Comparison</div>
+    ${sorted.map(([name,acc],i)=>`
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;color:${i===0?'var(--accent)':'var(--text2)'};font-weight:${i===0?'700':'400'}">${i===0?'🏆':i===1?'🥈':i===2?'🥉':'  '} ${name}</span>
+          <span style="font-size:12px;font-family:var(--font-display);color:${i===0?'var(--accent)':'var(--text2)'}; font-weight:700">${(acc*100).toFixed(1)}%</span>
+        </div>
+        <div class="progress"><div class="progress-bar" style="width:${acc*100}%;background:${i===0?'linear-gradient(90deg,var(--accent),var(--accent2))':'linear-gradient(90deg,var(--text3),var(--border2))'}"></div></div>
+      </div>`).join('')}
+  </div>`;
+
+  // Bar chart
+  const chartCard = document.createElement('div');
+  chartCard.className = 'card';
+  chartCard.innerHTML = '<div class="card-title">Performance Chart</div><canvas id="compare-chart" height="200"></canvas>';
+  container.appendChild(chartCard);
+
+  destroyChart('compare-chart');
+  const ctx = document.getElementById('compare-chart').getContext('2d');
+  state.charts['compare-chart'] = new Chart(ctx, {
+    type:'bar',
+    data:{labels:sorted.map(([n])=>n),datasets:[{label:'Test Accuracy',data:sorted.map(([_,v])=>(v*100).toFixed(1)),backgroundColor:sorted.map((_,i)=>CLUSTER_COLORS[i]+'99'),borderColor:sorted.map((_,i)=>CLUSTER_COLORS[i]),borderWidth:2}]},
+    options:{...getChartDefaults(),scales:{y:{min:0,max:100,ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e2d4a'}},x:{ticks:{color:'#64748b',font:{size:9}},grid:{color:'#1e2d4a'}}}}
+  });
+}
+
+function clearComparison() {
+  state.algoResults = {};
+  document.getElementById('compare-results').innerHTML = '<div style="color:var(--text3);font-size:11px;text-align:center;padding:30px;">Run algorithms on a dataset to compare results</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOCAL STORAGE
+// ═══════════════════════════════════════════════════════════════════════════════
+function saveToLocalStorage(key, data) {
+  try { localStorage.setItem('ml_playground_'+key, JSON.stringify(data)); }
+  catch(e) { console.warn('Storage error:', e); }
+}
+
+function loadFromLocalStorage(key) {
+  try { const d = localStorage.getItem('ml_playground_'+key); return d ? JSON.parse(d) : null; }
+  catch(e) { return null; }
+}
+
+function exportResults() {
+  const data = {
+    dataset: { rows: state.rawData?.length||0, features: state.features, target: state.target },
+    results: state.algoResults,
+    timestamp: new Date().toISOString()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ml_results.json'; a.click();
+}
+
+function exportDataset() {
+  if (!state.rawData) return;
+  const csv = [state.headers.join(','), ...state.rawData.map(r=>state.headers.map(h=>r[h]).join(','))].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='dataset.csv'; a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════════════════════════════════════════════
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.style.borderColor='var(--accent)'; });
+dz.addEventListener('dragleave', ()=>dz.style.borderColor='');
+dz.addEventListener('drop', e=>{ e.preventDefault(); dz.style.borderColor=''; const f=e.dataTransfer.files[0]; if(f?.name.endsWith('.csv')){const r=new FileReader();r.onload=ev=>parseCSV(ev.target.result,f.name);r.readAsText(f);} });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Check for saved dataset
+  const saved = loadFromLocalStorage('dataset');
+  if (saved) {
+    state.rawData = saved.rows;
+    state.headers = saved.headers;
+    state.features = saved.headers.slice(0,-1);
+    state.target = saved.headers[saved.headers.length-1];
+    renderDatasetUI(saved.name);
+  }
+
+  // Set initial active nav
+  document.querySelector('.nav-item').classList.add('active');
+});
+</script>
+</body>
+</html>
