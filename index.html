@@ -389,11 +389,14 @@ canvas{display:block;}
             <div class="metric"><div class="metric-val">—</div><div class="metric-label">MAE</div></div>
             <div class="metric"><div class="metric-val">—</div><div class="metric-label">RMSE</div></div>
           </div>
-          <div class="form-group" style="margin-top:10px;">
-            <label>Predict (enter feature values, comma-separated):</label>
-            <input type="text" id="lr-pred-input" placeholder="e.g. 5.1,3.5,1.4">
-            <button class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="predictLinear()">Predict →</button>
-            <div id="lr-pred-result" style="margin-top:6px;font-size:12px;color:var(--accent)"></div>
+          <div id="lr-pred-panel" style="display:none;margin-top:10px;">
+            <div style="font-size:11px;color:var(--text2);margin-bottom:8px;font-weight:600">🎯 Predict New Sample</div>
+            <div id="lr-pred-dyn-inputs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:10px;"></div>
+            <div class="btn-row">
+              <button class="btn btn-secondary btn-sm" onclick="predictLinear()">Predict →</button>
+              <button class="btn btn-secondary btn-sm" onclick="fillRandomSample('lr')">🎲 Random</button>
+            </div>
+            <div id="lr-pred-result" style="margin-top:8px;"></div>
           </div>
         </div>
       </div>
@@ -443,6 +446,15 @@ canvas{display:block;}
         <div class="card"><div class="card-title">Loss Curve</div><canvas id="log-loss-chart" height="200"></canvas></div>
         <div class="card"><div class="card-title">Decision Boundary</div><canvas id="log-boundary-chart" height="200"></canvas></div>
       </div>
+      <div class="card" id="log-pred-card" style="display:none">
+        <div class="card-title">🎯 Predict New Sample <span class="badge badge-accent">Logistic Regression</span></div>
+        <div id="log-pred-inputs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="predictLogistic()">Predict →</button>
+          <button class="btn btn-secondary btn-sm" onclick="fillRandomSample('log')">🎲 Random Sample</button>
+        </div>
+        <div id="log-pred-result" style="margin-top:10px;"></div>
+      </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ NAIVE BAYES -->
@@ -478,6 +490,15 @@ canvas{display:block;}
       <div class="grid-2">
         <div class="card"><div class="card-title">Class Probability Distribution</div><canvas id="nb-dist-chart" height="220"></canvas></div>
         <div class="card"><div class="card-title">Feature Importance (Log-Likelihood)</div><canvas id="nb-feat-chart" height="220"></canvas></div>
+      </div>
+      <div class="card" id="nb-pred-card" style="display:none">
+        <div class="card-title">🎯 Predict New Sample <span class="badge badge-purple">Naive Bayes</span></div>
+        <div id="nb-pred-inputs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="predictNaiveBayes()">Predict →</button>
+          <button class="btn btn-secondary btn-sm" onclick="fillRandomSample('nb')">🎲 Random Sample</button>
+        </div>
+        <div id="nb-pred-result" style="margin-top:10px;"></div>
       </div>
     </div>
 
@@ -515,6 +536,15 @@ canvas{display:block;}
         <div class="card"><div class="card-title">Hinge Loss</div><canvas id="svm-loss-chart" height="200"></canvas></div>
         <div class="card"><div class="card-title">Decision Boundary & Margin</div><canvas id="svm-boundary-chart" height="200"></canvas></div>
       </div>
+      <div class="card" id="svm-pred-card" style="display:none">
+        <div class="card-title">🎯 Predict New Sample <span class="badge badge-accent">SVM</span></div>
+        <div id="svm-pred-inputs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="predictSVM()">Predict →</button>
+          <button class="btn btn-secondary btn-sm" onclick="fillRandomSample('svm')">🎲 Random Sample</button>
+        </div>
+        <div id="svm-pred-result" style="margin-top:10px;"></div>
+      </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ DECISION TREE -->
@@ -550,6 +580,15 @@ canvas{display:block;}
       <div class="grid-2">
         <div class="card"><div class="card-title">Feature Importance</div><canvas id="dt-feat-chart" height="200"></canvas></div>
         <div class="card"><div class="card-title">Tree Visualization</div><canvas id="dt-tree-chart" width="500" height="200"></canvas></div>
+      </div>
+      <div class="card" id="dt-pred-card" style="display:none">
+        <div class="card-title">🎯 Predict New Sample <span class="badge badge-green">Decision Tree</span></div>
+        <div id="dt-pred-inputs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="predictDT()">Predict →</button>
+          <button class="btn btn-secondary btn-sm" onclick="fillRandomSample('dt')">🎲 Random Sample</button>
+        </div>
+        <div id="dt-pred-result" style="margin-top:10px;"></div>
       </div>
     </div>
 
@@ -589,6 +628,15 @@ canvas{display:block;}
       <div class="card">
         <div class="card-title">Cluster Visualization</div>
         <canvas id="km-chart" height="350"></canvas>
+      </div>
+      <div class="card" id="km-pred-card" style="display:none">
+        <div class="card-title">🎯 Assign New Point to Cluster <span class="badge badge-accent">K-Means</span></div>
+        <div id="km-pred-inputs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="predictKMeans()">Assign →</button>
+          <button class="btn btn-secondary btn-sm" onclick="fillRandomSample('km')">🎲 Random Point</button>
+        </div>
+        <div id="km-pred-result" style="margin-top:10px;"></div>
       </div>
     </div>
 
@@ -693,6 +741,15 @@ canvas{display:block;}
         <div class="card"><div class="card-title">PCA Projection (2D)</div><canvas id="pca-scatter-chart" height="250"></canvas></div>
         <div class="card"><div class="card-title">Explained Variance Ratio</div><canvas id="pca-var-chart" height="250"></canvas></div>
       </div>
+      <div class="card" id="pca-pred-card" style="display:none">
+        <div class="card-title">🎯 Project New Point <span class="badge badge-amber">PCA</span></div>
+        <div id="pca-pred-inputs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="predictPCA()">Project →</button>
+          <button class="btn btn-secondary btn-sm" onclick="fillRandomSample('pca')">🎲 Random Point</button>
+        </div>
+        <div id="pca-pred-result" style="margin-top:10px;"></div>
+      </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════ FNN -->
@@ -734,6 +791,15 @@ canvas{display:block;}
       <div class="card">
         <div class="card-title">Loss Curve</div>
         <canvas id="fnn-loss-chart" height="180"></canvas>
+      </div>
+      <div class="card" id="fnn-pred-card" style="display:none">
+        <div class="card-title">🎯 Predict New Sample <span class="badge badge-purple">Neural Network</span></div>
+        <div id="fnn-pred-inputs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:12px;"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="predictFNN()">Predict →</button>
+          <button class="btn btn-secondary btn-sm" onclick="fillRandomSample('fnn')">🎲 Random Sample</button>
+        </div>
+        <div id="fnn-pred-result" style="margin-top:10px;"></div>
       </div>
     </div>
 
@@ -1479,6 +1545,20 @@ function runLinearRegression() {
   }
 
   state.lrModel = { w, b };
+  // Show prediction panel with labeled feature inputs
+  const lrPanel = document.getElementById('lr-pred-panel');
+  const lrInputs = document.getElementById('lr-pred-dyn-inputs');
+  if (lrPanel && lrInputs) {
+    lrInputs.innerHTML = state.features.map((f, i) => {
+      const vals = state.trainX.map(r => r[i]);
+      const mean = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(3);
+      return `<div class="form-group" style="margin-bottom:0">
+        <label style="font-size:10px">${f}</label>
+        <input type="number" step="any" id="pred-lr-pred-dyn-inputs-${i}" value="${mean}" placeholder="${mean}">
+      </div>`;
+    }).join('');
+    lrPanel.style.display = 'block';
+  }
   const testPreds = state.testX.map(xi => math.dot(xi, w) + b);
   const yMean = math.mean(state.testY);
   const ssTot = state.testY.reduce((s,v)=>s+(v-yMean)**2,0);
@@ -1506,10 +1586,12 @@ function runLinearRegression() {
 }
 
 function predictLinear() {
-  if (!state.lrModel) return;
-  const vals = document.getElementById('lr-pred-input').value.split(',').map(Number);
+  if (!state.lrModel) return alert('Train the model first');
+  const vals = state.features.length
+    ? state.features.map((_, i) => parseFloat(document.getElementById(`pred-lr-pred-dyn-inputs-${i}`)?.value) || 0)
+    : document.getElementById('lr-pred-input')?.value.split(',').map(Number) || [];
   const pred = math.dot(vals, state.lrModel.w) + state.lrModel.b;
-  document.getElementById('lr-pred-result').textContent = `Prediction: ${pred.toFixed(4)}`;
+  regressionResult('lr-pred-result', pred.toFixed(4), 'Predicted ' + (state.target || 'Value'));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1538,6 +1620,7 @@ function runLogisticRegression() {
   }
 
   state.logModel = { w, b, thresh };
+  showPredPanel('log');
   const testPreds = state.testX.map(xi => math.sigmoid(math.dot(xi, w) + b));
   const testBinary = testPreds.map(p => p >= thresh ? 1 : 0);
   const yBin = state.testY.map(v => v > 0 ? 1 : 0);
@@ -1611,9 +1694,11 @@ function runNaiveBayes() {
     return classes[logProbs.indexOf(Math.max(...logProbs))];
   };
 
+  state.nbModel = { priors, means, vars, classes };
   const preds = state.testX.map(predict);
   const acc = accuracy(state.testY, preds);
   updateMetrics('nb-metrics', [(acc*100).toFixed(1)+'%', '—', '—', f1Score(state.testY,preds).toFixed(3)]);
+  showPredPanel('nb');
 
   // Distribution chart
   destroyChart('nb-dist-chart');
@@ -1674,6 +1759,7 @@ function runSVM() {
   }
 
   state.svmModel = { w, b };
+  showPredPanel('svm');
   const preds = state.testX.map(xi => math.dot(xi,w)+b >= 0 ? 1 : 0);
   const yBin = state.testY.map(v=>v>0?1:0);
   const acc = accuracy(yBin, preds);
@@ -1775,6 +1861,7 @@ function runDecisionTree() {
   count(tree);
 
   updateMetrics('dt-metrics', [(acc*100).toFixed(1)+'%', maxD, leaves, f1Score(state.testY,preds).toFixed(3)]);
+  showPredPanel('dt');
 
   // Feature importance via gain
   const importance = new Array(state.features.length).fill(0);
@@ -1877,6 +1964,23 @@ async function runKMeans(animate=false) {
   const inertia = pts.reduce((s,p,i)=>s+math.euclidean(p,centroids[assignments[i]])**2,0);
   const sil = simpleSilhouette(pts, assignments, k);
   updateMetrics('km-metrics', [inertia.toFixed(1), sil.toFixed(3), iters, converged?'✓':'✗']);
+  state.kmModel = { centroids, assignments, k };
+  if (state.trainX.length) {
+    showPredPanel('km');
+  } else {
+    // No dataset — show 2D point inputs using cluster point dimensions
+    const card = document.getElementById('km-pred-card');
+    const inp = document.getElementById('km-pred-inputs');
+    if (card && inp) {
+      inp.innerHTML = ['X coordinate','Y coordinate'].map((label, i) =>
+        `<div class="form-group" style="margin-bottom:0">
+          <label style="font-size:10px">${label} <span style="color:var(--text3)">[0–1]</span></label>
+          <input type="number" step="0.01" id="pred-km-pred-inputs-${i}" value="0.5" min="0" max="1">
+        </div>`
+      ).join('');
+      card.style.display = 'block';
+    }
+  }
   drawKMeansChart(pts, assignments, centroids, k);
 }
 
@@ -2102,6 +2206,10 @@ function runPCA() {
     d
   ]);
 
+  // Save PCA model for prediction
+  state.pcaModel = { means, eigenvecs, ratios };
+  showPredPanel('pca');
+
   // Project to 2D
   const proj2D = X.map(r=>[
     math.dot(r.map((v,j)=>v-means[j]),eigenvecs[0]),
@@ -2207,6 +2315,7 @@ function buildFNN() {
   }
 
   state.fnnModel = { weights, biases, sizes, actFn, forward };
+  showPredPanel('fnn');
 
   const preds = state.testX.map(xi=>{ const {acts}=forward(xi); const out=acts[acts.length-1]; return out.indexOf(Math.max(...out)); });
   const acc = accuracy(state.testY.map(v=>v%outSize), preds);
@@ -2930,6 +3039,282 @@ async function runAllAlgos() {
 function clearComparison() {
   state.algoResults = {};
   document.getElementById('compare-results').innerHTML = '<div style="color:var(--text3);font-size:11px;text-align:center;padding:30px;">Run algorithms on a dataset to compare results</div>';
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PREDICTION HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Build labeled feature input fields for a prediction card
+function buildPredInputs(containerId, cardId) {
+  if (!state.features.length) return;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = state.features.map((f, i) => {
+    // Compute min/max/mean from training data for placeholder hints
+    const vals = state.trainX.map(r => r[i]);
+    const mn = Math.min(...vals).toFixed(3);
+    const mx = Math.max(...vals).toFixed(3);
+    const mean = (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(3);
+    return `<div class="form-group" style="margin-bottom:0">
+      <label style="font-size:10px">${f}
+        <span style="color:var(--text3);font-weight:400">[${mn}–${mx}]</span>
+      </label>
+      <input type="number" step="any" class="pred-input-${containerId}"
+        id="pred-${containerId}-${i}" placeholder="${mean}" value="${mean}"
+        style="font-size:11px">
+    </div>`;
+  }).join('');
+  document.getElementById(cardId).style.display = 'block';
+}
+
+// Read current values from prediction inputs
+function readPredInputs(containerId) {
+  return state.features.map((_, i) => {
+    const el = document.getElementById(`pred-${containerId}-${i}`);
+    return el ? parseFloat(el.value) || 0 : 0;
+  });
+}
+
+// Fill prediction inputs with a random test sample
+function fillRandomSample(prefix) {
+  const map = { log:'log-pred-inputs', nb:'nb-pred-inputs', svm:'svm-pred-inputs',
+                dt:'dt-pred-inputs', fnn:'fnn-pred-inputs', km:'km-pred-inputs',
+                pca:'pca-pred-inputs', lr:'lr-pred-input' };
+  const containerId = map[prefix];
+  if (!containerId || !state.testX.length) return;
+  const sample = state.testX[Math.floor(Math.random() * state.testX.length)];
+  if (prefix === 'lr') {
+    document.getElementById('lr-pred-input').value = sample.map(v=>v.toFixed(4)).join(',');
+    return;
+  }
+  sample.forEach((v, i) => {
+    const el = document.getElementById(`pred-${containerId}-${i}`);
+    if (el) el.value = v.toFixed(4);
+  });
+}
+
+// Render a classification result box
+function classResult(containerId, className, confidence, allProbs, classes) {
+  const color = ['var(--accent)','var(--accent2)','var(--accent3)','var(--accent4)','var(--accent5)'];
+  let html = `
+    <div style="background:var(--bg3);border:1px solid var(--accent);border-radius:8px;padding:14px;animation:slideIn 0.3s ease">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Predicted Class</div>
+      <div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--accent);margin-bottom:10px">
+        ${className}
+      </div>`;
+  if (allProbs) {
+    html += `<div style="font-size:10px;color:var(--text3);margin-bottom:6px">Class Probabilities</div>`;
+    allProbs.forEach((p, i) => {
+      const label = classes ? (state.classes?.[classes[i]] ?? 'Class '+classes[i]) : 'Class '+i;
+      html += `<div style="margin-bottom:5px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-bottom:2px">
+          <span>${label}</span><span>${(p*100).toFixed(1)}%</span>
+        </div>
+        <div class="progress"><div class="progress-bar" style="width:${p*100}%;background:${color[i%color.length]}"></div></div>
+      </div>`;
+    });
+  }
+  if (confidence !== null) {
+    html += `<div style="font-size:10px;color:var(--text3);margin-top:8px">Confidence: <span style="color:var(--accent3)">${(confidence*100).toFixed(1)}%</span></div>`;
+  }
+  html += `</div>`;
+  document.getElementById(containerId).innerHTML = html;
+}
+
+// Render a regression result box
+function regressionResult(containerId, value, label='Predicted Value') {
+  document.getElementById(containerId).innerHTML = `
+    <div style="background:var(--bg3);border:1px solid var(--accent3);border-radius:8px;padding:14px;animation:slideIn 0.3s ease">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">${label}</div>
+      <div style="font-family:var(--font-display);font-size:28px;font-weight:800;color:var(--accent3)">${value}</div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOGISTIC REGRESSION — PREDICT
+// ═══════════════════════════════════════════════════════════════════════════════
+function predictLogistic() {
+  if (!state.logModel) return alert('Train the model first');
+  const xi = readPredInputs('log-pred-inputs');
+  const { w, b, thresh } = state.logModel;
+  const prob = math.sigmoid(math.dot(xi, w) + b);
+  const pred = prob >= thresh ? 1 : 0;
+  const className = state.classes?.[pred] ?? 'Class ' + pred;
+  classResult('log-pred-result', className, null,
+    [1 - prob, prob], [0, 1]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NAIVE BAYES — PREDICT
+// ═══════════════════════════════════════════════════════════════════════════════
+function predictNaiveBayes() {
+  if (!state.nbModel) return alert('Train the model first');
+  const xi = readPredInputs('nb-pred-inputs');
+  const { priors, means, vars, classes } = state.nbModel;
+  const logProbs = classes.map(c => {
+    let lp = Math.log(priors[c]);
+    xi.forEach((x, j) => {
+      const m = means[c][j], v = vars[c][j];
+      lp += -0.5 * Math.log(2 * Math.PI * v) - (x - m) ** 2 / (2 * v);
+    });
+    return lp;
+  });
+  // Softmax over log probs for display
+  const maxLp = Math.max(...logProbs);
+  const expLp = logProbs.map(lp => Math.exp(lp - maxLp));
+  const sumExp = expLp.reduce((a,b)=>a+b,0);
+  const probs = expLp.map(v => v / sumExp);
+  const predIdx = logProbs.indexOf(Math.max(...logProbs));
+  const className = state.classes?.[classes[predIdx]] ?? 'Class ' + classes[predIdx];
+  classResult('nb-pred-result', className, probs[predIdx], probs, classes);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SVM — PREDICT
+// ═══════════════════════════════════════════════════════════════════════════════
+function predictSVM() {
+  if (!state.svmModel) return alert('Train the model first');
+  const xi = readPredInputs('svm-pred-inputs');
+  const { w, b } = state.svmModel;
+  const score = math.dot(xi, w) + b;
+  const pred = score >= 0 ? 1 : 0;
+  const className = state.classes?.[pred] ?? 'Class ' + pred;
+  // Distance to hyperplane as confidence proxy
+  const margin = Math.abs(score) / (Math.sqrt(math.dot(w,w)) || 1);
+  const conf = Math.min(1, margin);
+  classResult('svm-pred-result', className, conf,
+    pred === 1 ? [1 - conf * 0.4, conf * 0.4 + 0.6] : [conf * 0.4 + 0.6, 1 - conf * 0.4],
+    [0, 1]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DECISION TREE — PREDICT
+// ═══════════════════════════════════════════════════════════════════════════════
+function predictDT() {
+  if (!state.dtModel) return alert('Train the model first');
+  const xi = readPredInputs('dt-pred-inputs');
+  const pred = predictTree(state.dtModel, xi);
+
+  // Walk tree to get leaf distribution for confidence
+  let node = state.dtModel;
+  const path = [];
+  while (node.value === null) {
+    const goLeft = xi[node.feature] <= node.threshold;
+    path.push(`f${node.feature} ${goLeft?'≤':'>'}${node.threshold.toFixed(3)}`);
+    node = goLeft ? node.left : node.right;
+  }
+
+  const className = state.classes?.[pred] ?? 'Class ' + pred;
+  const allClasses = [...new Set(state.trainY)].sort((a,b)=>a-b);
+  // Build pseudo-probs (1-hot from deterministic tree)
+  const probs = allClasses.map(c => c === pred ? 1 : 0);
+
+  let html = `
+    <div style="background:var(--bg3);border:1px solid var(--accent3);border-radius:8px;padding:14px;animation:slideIn 0.3s ease">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Predicted Class</div>
+      <div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--accent3);margin-bottom:10px">${className}</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px">Decision Path (${path.length} splits)</div>
+      <div style="font-size:10px;color:var(--text2);line-height:1.8">${path.map((p,i)=>`<span style="color:var(--accent)">${i+1}.</span> ${p}`).join(' → ')}</div>
+    </div>`;
+  document.getElementById('dt-pred-result').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FNN — PREDICT
+// ═══════════════════════════════════════════════════════════════════════════════
+function predictFNN() {
+  if (!state.fnnModel) return alert('Build and train a model first');
+  const xi = readPredInputs('fnn-pred-inputs');
+  const { forward, sizes } = state.fnnModel;
+  const { acts } = forward(xi);
+  const outProbs = acts[acts.length - 1];
+  const predIdx = outProbs.indexOf(Math.max(...outProbs));
+  const className = state.classes?.[predIdx] ?? 'Class ' + predIdx;
+  const allClasses = outProbs.map((_, i) => i);
+  classResult('fnn-pred-result', className, outProbs[predIdx], outProbs, allClasses);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// K-MEANS — PREDICT (assign to nearest centroid)
+// ═══════════════════════════════════════════════════════════════════════════════
+function predictKMeans() {
+  if (!state.kmModel) return alert('Run K-Means first');
+  const xi = state.trainX.length
+    ? readPredInputs('km-pred-inputs')
+    : [0,1].map(i => parseFloat(document.getElementById('pred-km-pred-inputs-'+i)?.value) || 0);
+  const { centroids } = state.kmModel;
+  const dists = centroids.map((c, i) => ({ i, d: math.euclidean(xi, c) }));
+  dists.sort((a, b) => a.d - b.d);
+  const nearest = dists[0];
+  const color = ['var(--accent)','var(--accent2)','var(--accent3)','var(--accent4)','var(--accent5)'];
+  let html = `
+    <div style="background:var(--bg3);border:1px solid var(--accent);border-radius:8px;padding:14px;animation:slideIn 0.3s ease">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Assigned to Cluster</div>
+      <div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:${color[nearest.i % color.length]};margin-bottom:10px">
+        Cluster ${nearest.i + 1}
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:8px">Distance to each centroid:</div>
+      ${dists.map(({i, d}) => `
+        <div style="margin-bottom:5px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-bottom:2px">
+            <span style="color:${color[i%color.length]}">Cluster ${i+1}</span>
+            <span>${d.toFixed(4)}</span>
+          </div>
+          <div class="progress"><div class="progress-bar" style="width:${Math.max(5,100-d*80)}%;background:${color[i%color.length]}"></div></div>
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('km-pred-result').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PCA — PREDICT (project new point onto principal components)
+// ═══════════════════════════════════════════════════════════════════════════════
+function predictPCA() {
+  if (!state.pcaModel) return alert('Run PCA first');
+  const xi = readPredInputs('pca-pred-inputs');
+  const { means, eigenvecs, ratios } = state.pcaModel;
+  const xc = xi.map((v, j) => v - means[j]);
+  const projections = eigenvecs.map((ev, i) => ({
+    component: i + 1,
+    value: math.dot(xc, ev),
+    variance: (ratios[i] * 100).toFixed(1)
+  }));
+  let html = `
+    <div style="background:var(--bg3);border:1px solid var(--accent4);border-radius:8px;padding:14px;animation:slideIn 0.3s ease">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px">Projection onto Principal Components</div>
+      ${projections.map(p => `
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-bottom:2px">
+            <span style="color:var(--accent4)">PC${p.component}</span>
+            <span style="color:var(--accent);font-family:var(--font-display);font-weight:700">${p.value.toFixed(4)}</span>
+            <span style="color:var(--text3)">${p.variance}% var</span>
+          </div>
+          <div class="progress"><div class="progress-bar" style="width:${Math.min(100,Math.abs(p.value)*20+10)}%;background:var(--accent4)"></div></div>
+        </div>`).join('')}
+      <div style="font-size:10px;color:var(--text3);margin-top:8px">
+        2D coordinates: <span style="color:var(--accent)">(${projections[0].value.toFixed(3)}, ${projections[1]?.value.toFixed(3) ?? '0.000'})</span>
+      </div>
+    </div>`;
+  document.getElementById('pca-pred-result').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HOOK: show prediction panels after training completes
+// ═══════════════════════════════════════════════════════════════════════════════
+function showPredPanel(prefix) {
+  const map = {
+    log:  ['log-pred-inputs',  'log-pred-card'],
+    nb:   ['nb-pred-inputs',   'nb-pred-card'],
+    svm:  ['svm-pred-inputs',  'svm-pred-card'],
+    dt:   ['dt-pred-inputs',   'dt-pred-card'],
+    fnn:  ['fnn-pred-inputs',  'fnn-pred-card'],
+    km:   ['km-pred-inputs',   'km-pred-card'],
+    pca:  ['pca-pred-inputs',  'pca-pred-card'],
+  };
+  const [inputId, cardId] = map[prefix] || [];
+  if (inputId) buildPredInputs(inputId, cardId);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
